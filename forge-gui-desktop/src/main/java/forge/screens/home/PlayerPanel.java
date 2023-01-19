@@ -72,6 +72,7 @@ public class PlayerPanel extends FPanel {
 
     private final FTextField txtPlayerName = new FTextField.Builder().build();
     private FRadioButton radioHuman;
+    private FRadioButton radioTwo;
     private FRadioButton radioAi;
     private JCheckBoxMenuItem radioAiUseSimulation;
     private FRadioButton radioOpen;
@@ -144,6 +145,7 @@ public class PlayerPanel extends FPanel {
 
         createPlayerTypeOptions();
         this.add(radioHuman, "gapright 5px");
+        this.add(radioTwo, "gapright 5px");
         this.add(radioAi, "wrap");
 
         this.add(lobby.newLabel(localizer.getMessage("lblTeam") + ":"), "w 40px, h 30px");
@@ -233,15 +235,18 @@ public class PlayerPanel extends FPanel {
 
         if (mayRemove) {
             radioHuman.setEnabled(mayControl);
+            radioTwo.setEnabled(mayControl);
             radioAi.setEnabled(mayControl);
             radioOpen.setEnabled(mayControl);
         } else {
             radioHuman.setVisible(mayControl);
+            radioTwo.setVisible(mayControl);
             radioAi.setVisible(mayControl);
             radioOpen.setVisible(mayControl);
         }
 
         radioHuman.setSelected(type == LobbySlotType.LOCAL);
+        radioTwo.setSelected(type == LobbySlotType.AI);
         radioAi.setSelected(type == LobbySlotType.AI);
         radioOpen.setSelected(type == LobbySlotType.OPEN);
 
@@ -460,7 +465,7 @@ public class PlayerPanel extends FPanel {
                 : Collections.emptySet();
     }
     private boolean isSimulatedAi() {
-        return radioAi.isSelected() && radioAiUseSimulation.isSelected();
+        return (radioAi.isSelected() || radioTwo.isSelected()) && radioAiUseSimulation.isSelected();
     }
     public void setUseAiSimulation(final boolean useSimulation) {
         radioAiUseSimulation.setSelected(useSimulation);
@@ -492,6 +497,7 @@ public class PlayerPanel extends FPanel {
         if (remote) {
             setType(LobbySlotType.REMOTE);
             radioHuman.setSelected(false);
+            radioTwo.setSelected(false);
             radioAi.setSelected(false);
             radioOpen.setSelected(false);
         } else {
@@ -619,6 +625,7 @@ public class PlayerPanel extends FPanel {
 
     private void createPlayerTypeOptions() {
         radioHuman = new FRadioButton(localizer.getMessage("lblHuman"));
+        radioTwo = new FRadioButton(localizer.getMessage("lblAI"));
         radioAi = new FRadioButton(localizer.getMessage("lblAI"));
         radioOpen = new FRadioButton(localizer.getMessage("lblOpen"));
 
@@ -632,11 +639,13 @@ public class PlayerPanel extends FPanel {
         radioAi.setComponentPopupMenu(menu);
 
         radioHuman.addMouseListener(radioMouseAdapter(radioHuman, LobbySlotType.LOCAL));
+        radioTwo.addMouseListener(radioMouseAdapter(radioTwo, LobbySlotType.AI));
         radioAi.addMouseListener   (radioMouseAdapter(radioAi,    LobbySlotType.AI));
         radioOpen.addMouseListener (radioMouseAdapter(radioOpen,  LobbySlotType.OPEN));
 
         final ButtonGroup tempBtnGroup = new ButtonGroup();
         tempBtnGroup.add(radioHuman);
+        tempBtnGroup.add(radioTwo);
         tempBtnGroup.add(radioAi);
         tempBtnGroup.add(radioOpen);
     }
