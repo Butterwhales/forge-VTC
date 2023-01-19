@@ -246,7 +246,7 @@ public class PlayerPanel extends FPanel {
         }
 
         radioHuman.setSelected(type == LobbySlotType.LOCAL);
-        radioTwo.setSelected(type == LobbySlotType.AI);
+        radioTwo.setSelected(type == LobbySlotType.AIV2);
         radioAi.setSelected(type == LobbySlotType.AI);
         radioOpen.setSelected(type == LobbySlotType.OPEN);
 
@@ -458,6 +458,9 @@ public class PlayerPanel extends FPanel {
     public boolean isAi() {
         return type == LobbySlotType.AI;
     }
+    public boolean isAIV2() {
+        return type == LobbySlotType.AIV2;
+    }
 
     public Set<AIOption> getAiOptions() {
         return isSimulatedAi()
@@ -625,7 +628,7 @@ public class PlayerPanel extends FPanel {
 
     private void createPlayerTypeOptions() {
         radioHuman = new FRadioButton(localizer.getMessage("lblHuman"));
-        radioTwo = new FRadioButton(localizer.getMessage("lblAI"));
+        radioTwo = new FRadioButton(localizer.getMessage("lblCustomAI"));
         radioAi = new FRadioButton(localizer.getMessage("lblAI"));
         radioOpen = new FRadioButton(localizer.getMessage("lblOpen"));
 
@@ -639,7 +642,7 @@ public class PlayerPanel extends FPanel {
         radioAi.setComponentPopupMenu(menu);
 
         radioHuman.addMouseListener(radioMouseAdapter(radioHuman, LobbySlotType.LOCAL));
-        radioTwo.addMouseListener(radioMouseAdapter(radioTwo, LobbySlotType.AI));
+        radioTwo.addMouseListener(radioMouseAdapter(radioTwo, LobbySlotType.AIV2));
         radioAi.addMouseListener   (radioMouseAdapter(radioAi,    LobbySlotType.AI));
         radioOpen.addMouseListener (radioMouseAdapter(radioOpen,  LobbySlotType.OPEN));
 
