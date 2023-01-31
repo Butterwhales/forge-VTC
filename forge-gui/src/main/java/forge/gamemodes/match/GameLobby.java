@@ -427,11 +427,13 @@ public abstract class GameLobby implements IHasGameType {
             final Set<AIOption> aiOptions = slot.getAiOptions();
 
             final boolean isAI = slot.getType() == LobbySlotType.AI;
+            final boolean isAIV2 = slot.getType() == LobbySlotType.AIV2;
             final LobbyPlayer lobbyPlayer;
             if (isAI) {
                 lobbyPlayer = GamePlayerUtil.createAiPlayer(name, avatar, sleeve, aiOptions);
-            }
-            else {
+            } else if (isAIV2) {
+                lobbyPlayer = GamePlayerUtil.createAiPlayer(name, avatar, sleeve, aiOptions);
+            } else {
                 boolean setNameNow = false;
                 if (!hasNameBeenSet && slot.getType() == LobbySlotType.LOCAL) {
                     setNameNow = true;
@@ -521,7 +523,7 @@ public abstract class GameLobby implements IHasGameType {
                 players.add(rp.setPlayer(lobbyPlayer));
             }
 
-            if (!isAI) {
+            if (!isAI && !isAIV2) {
                 guis.put(rp, gui);
             }
             //override starting life for 1v1 Brawl

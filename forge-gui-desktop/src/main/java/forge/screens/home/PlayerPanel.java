@@ -487,6 +487,9 @@ public class PlayerPanel extends FPanel {
         case AI:
             radioAi.setSelected(true);
             break;
+        case AIV2:
+            radioTwo.setSelected(true);
+            break;
         case OPEN:
             radioOpen.setSelected(true);
             break;
