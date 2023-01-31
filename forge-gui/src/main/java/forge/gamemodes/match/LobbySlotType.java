@@ -5,5 +5,5 @@ public enum LobbySlotType {
     AI,
     OPEN,
     REMOTE,
-    AIV2
+    GOLDFISHER
 }

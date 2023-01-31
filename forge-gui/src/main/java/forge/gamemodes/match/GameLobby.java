@@ -426,7 +426,7 @@ public abstract class GameLobby implements IHasGameType {
             final int team = GameType.Archenemy.equals(currentGameType) && !isArchenemy ? 1 : slot.getTeam();
             final Set<AIOption> aiOptions = slot.getAiOptions();
 
-            final boolean isAI = (slot.getType() == LobbySlotType.AI) || (slot.getType() == LobbySlotType.AIV2);
+            final boolean isAI = (slot.getType() == LobbySlotType.AI) || (slot.getType() == LobbySlotType.GOLDFISHER);
             final LobbyPlayer lobbyPlayer;
             if (isAI) {
                 lobbyPlayer = GamePlayerUtil.createAiPlayer(name, avatar, sleeve, aiOptions);

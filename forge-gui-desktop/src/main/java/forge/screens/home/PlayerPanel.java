@@ -72,7 +72,7 @@ public class PlayerPanel extends FPanel {
 
     private final FTextField txtPlayerName = new FTextField.Builder().build();
     private FRadioButton radioHuman;
-    private FRadioButton radioTwo;
+    private FRadioButton radioGoldFisher;
     private FRadioButton radioAi;
     private JCheckBoxMenuItem radioAiUseSimulation;
     private FRadioButton radioOpen;
@@ -145,7 +145,7 @@ public class PlayerPanel extends FPanel {
 
         createPlayerTypeOptions();
         this.add(radioHuman, "gapright 5px");
-        this.add(radioTwo, "gapright 5px");
+        this.add(radioGoldFisher, "gapright 5px");
         this.add(radioAi, "wrap");
 
         this.add(lobby.newLabel(localizer.getMessage("lblTeam") + ":"), "w 40px, h 30px");
@@ -235,18 +235,18 @@ public class PlayerPanel extends FPanel {
 
         if (mayRemove) {
             radioHuman.setEnabled(mayControl);
-            radioTwo.setEnabled(mayControl);
+            radioGoldFisher.setEnabled(mayControl);
             radioAi.setEnabled(mayControl);
             radioOpen.setEnabled(mayControl);
         } else {
             radioHuman.setVisible(mayControl);
-            radioTwo.setVisible(mayControl);
+            radioGoldFisher.setVisible(mayControl);
             radioAi.setVisible(mayControl);
             radioOpen.setVisible(mayControl);
         }
 
         radioHuman.setSelected(type == LobbySlotType.LOCAL);
-        radioTwo.setSelected(type == LobbySlotType.AIV2);
+        radioGoldFisher.setSelected(type == LobbySlotType.GOLDFISHER);
         radioAi.setSelected(type == LobbySlotType.AI);
         radioOpen.setSelected(type == LobbySlotType.OPEN);
 
@@ -458,8 +458,8 @@ public class PlayerPanel extends FPanel {
     public boolean isAi() {
         return type == LobbySlotType.AI;
     }
-    public boolean isAIV2() {
-        return type == LobbySlotType.AIV2;
+    public boolean isGoldFisher() {
+        return type == LobbySlotType.GOLDFISHER;
     }
 
     public Set<AIOption> getAiOptions() {
@@ -468,7 +468,7 @@ public class PlayerPanel extends FPanel {
                 : Collections.emptySet();
     }
     private boolean isSimulatedAi() {
-        return (radioAi.isSelected() || radioTwo.isSelected()) && radioAiUseSimulation.isSelected();
+        return (radioAi.isSelected() || radioGoldFisher.isSelected()) && radioAiUseSimulation.isSelected();
     }
     public void setUseAiSimulation(final boolean useSimulation) {
         radioAiUseSimulation.setSelected(useSimulation);
@@ -487,8 +487,8 @@ public class PlayerPanel extends FPanel {
         case AI:
             radioAi.setSelected(true);
             break;
-        case AIV2:
-            radioTwo.setSelected(true);
+        case GOLDFISHER:
+            radioGoldFisher.setSelected(true);
             break;
         case OPEN:
             radioOpen.setSelected(true);
@@ -503,7 +503,7 @@ public class PlayerPanel extends FPanel {
         if (remote) {
             setType(LobbySlotType.REMOTE);
             radioHuman.setSelected(false);
-            radioTwo.setSelected(false);
+            radioGoldFisher.setSelected(false);
             radioAi.setSelected(false);
             radioOpen.setSelected(false);
         } else {
@@ -631,7 +631,7 @@ public class PlayerPanel extends FPanel {
 
     private void createPlayerTypeOptions() {
         radioHuman = new FRadioButton(localizer.getMessage("lblHuman"));
-        radioTwo = new FRadioButton(localizer.getMessage("lblCustomAI"));
+        radioGoldFisher = new FRadioButton(localizer.getMessage("lblCustomAI"));
         radioAi = new FRadioButton(localizer.getMessage("lblAI"));
         radioOpen = new FRadioButton(localizer.getMessage("lblOpen"));
 
@@ -645,13 +645,13 @@ public class PlayerPanel extends FPanel {
         radioAi.setComponentPopupMenu(menu);
 
         radioHuman.addMouseListener(radioMouseAdapter(radioHuman, LobbySlotType.LOCAL));
-        radioTwo.addMouseListener(radioMouseAdapter(radioTwo, LobbySlotType.AIV2));
+        radioGoldFisher.addMouseListener(radioMouseAdapter(radioGoldFisher, LobbySlotType.GOLDFISHER));
         radioAi.addMouseListener   (radioMouseAdapter(radioAi,    LobbySlotType.AI));
         radioOpen.addMouseListener (radioMouseAdapter(radioOpen,  LobbySlotType.OPEN));
 
         final ButtonGroup tempBtnGroup = new ButtonGroup();
         tempBtnGroup.add(radioHuman);
-        tempBtnGroup.add(radioTwo);
+        tempBtnGroup.add(radioGoldFisher);
         tempBtnGroup.add(radioAi);
         tempBtnGroup.add(radioOpen);
     }

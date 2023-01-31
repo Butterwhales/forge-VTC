@@ -18,7 +18,7 @@ public final class LocalLobby extends GameLobby {
         final LobbySlot slot0 = new LobbySlot(LobbySlotType.LOCAL, humanName, avatarIndices[0], sleeveIndices[0],0, true, true, Collections.emptySet());
         addSlot(slot0);
 
-        final LobbySlot slot1 = new LobbySlot(LobbySlotType.AIV2, null, avatarIndices[1], sleeveIndices[1],1, false, true, Collections.emptySet());
+        final LobbySlot slot1 = new LobbySlot(LobbySlotType.GOLDFISHER, null, avatarIndices[1], sleeveIndices[1],1, false, true, Collections.emptySet());
         addSlot(slot1);
     }
 
