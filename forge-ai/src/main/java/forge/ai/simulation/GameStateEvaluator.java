@@ -31,7 +31,7 @@ public class GameStateEvaluator {
         }
         // If the current player has no creatures in play, there won't be any combat. This avoids
         // an expensive game copy operation.
-        // Note: This is is safe to do because the simulation is based on the current game state,
+        // Note: This is safe to do because the simulation is based on the current game state,
         // so there isn't a chance to play creatures in between.
         if (evalGame.getPhaseHandler().getPlayerTurn().getCreaturesInPlay().isEmpty()) {
             return null;
@@ -50,6 +50,11 @@ public class GameStateEvaluator {
         return result;
     }
 
+    /**
+     * Takes a Card and returns its name
+     * @param c A Card
+     * @return the Cards name as a string
+     */
     private static String cardToString(Card c) {
         String str = c.getName();
         if (c.isCreature()) {
@@ -58,6 +63,12 @@ public class GameStateEvaluator {
         return str;
     }
 
+    /**
+     * Returns a score based on if the AI won or lost
+     * @param game
+     * @param aiPlayer
+     * @return if the AI won return MAX_VALUE. Else return MIN_VALUE.
+     */
     private Score getScoreForGameOver(Game game, Player aiPlayer) {
         if (game.getOutcome().getWinningTeam() == aiPlayer.getTeam() ||
                 game.getOutcome().isWinner(aiPlayer.getRegisteredPlayer())) {
@@ -67,6 +78,13 @@ public class GameStateEvaluator {
         return new Score(Integer.MIN_VALUE);
     }
 
+    /**
+     * Determines a score based on the state of the Game.
+     * Runs a combat simulation for the upcoming combat phase.
+     * @param game
+     * @param aiPlayer
+     * @return If the Game is over it goes and calls getScoreForGameOver. Else it returns a score based on the result of combat
+     */
     public Score getScoreForGameState(Game game, Player aiPlayer) {
         if (game.isGameOver()) {
             return getScoreForGameOver(game, aiPlayer);
@@ -83,11 +101,20 @@ public class GameStateEvaluator {
         return getScoreForGameStateImpl(game, aiPlayer);
     }
 
+    /**
+     * Create a score based on the current state of the game.
+     * Used to determine what spells the AI should play
+     * @param game
+     * @param aiPlayer
+     * @return
+     */
     private Score getScoreForGameStateImpl(Game game, Player aiPlayer) {
         int score = 0;
         // TODO: more than 2 players
         // TODO: try and reuse evaluateBoardPosition
+        //The number of cards in my hand
         int myCards = 0;
+        //The number of cards all the opponents hands
         int theirCards = 0;
         for (Card c : game.getCardsIn(ZoneType.Hand)) {
             if (c.getController() == aiPlayer) {
@@ -98,6 +125,7 @@ public class GameStateEvaluator {
         }
         debugPrint("My cards in hand: " + myCards);
         debugPrint("Their cards in hand: " + theirCards);
+        //Add the number of cards in the AI's hand over the max hand size to the score and then sets the AIs hand size down to the max hand size
         if (!aiPlayer.isUnlimitedHandSize() && myCards > aiPlayer.getMaxHandSize()) {
             // Count excess cards for less.
             score += myCards - aiPlayer.getMaxHandSize();
@@ -143,6 +171,13 @@ public class GameStateEvaluator {
         return new Score(score, summonSickScore);
     }
 
+    /**
+     * Evaluate the value of a card. Used to determine which card the Computer should play
+     * @param game
+     * @param aiPlayer
+     * @param c
+     * @return A score based on the value of a card
+     */
     public int evalCard(Game game, Player aiPlayer, Card c) {
         // TODO: These should be based on other considerations - e.g. in relation to opponents state.
         if (c.isCreature()) {
@@ -165,6 +200,7 @@ public class GameStateEvaluator {
         }
     }
 
+
     private class SimulationCreatureEvaluator extends CreatureEvaluator {
         @Override
         protected int addValue(int value, String text) {
@@ -175,6 +211,9 @@ public class GameStateEvaluator {
         }
     }
 
+    /**
+     * A value that is attached to a card in order to determine its usefulness
+     */
     public static class Score {
         public final int value;
         public final int summonSickValue;
