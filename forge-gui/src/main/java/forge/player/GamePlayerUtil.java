@@ -1,7 +1,11 @@
 package forge.player;
 
+import java.util.Collections;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+import forge.GoldfisherAIOption;
+import forge.LobbyPlayerGoldfisher;
 import org.apache.commons.lang3.StringUtils;
 
 import forge.LobbyPlayer;
@@ -99,6 +103,48 @@ public final class GamePlayerUtil {
         player.setSleeveIndex(sleeveIndex);
         return player;
     }
+
+    public final static LobbyPlayer createGoldfisherPlayer(final String name, final int avatarIndex, final int sleeveIndex, final Set<AIOption> options) {
+        return createGoldfisherPlayer(name, avatarIndex, sleeveIndex, options, "");
+    }
+    public final static LobbyPlayer createGoldfisherPlayer(final String name, final int avatarIndex, final int sleeveIndex, final Set<AIOption> options, final String profileOverride) {
+        final LobbyPlayerGoldfisher player = new LobbyPlayerGoldfisher(name, convertAIOptions(options));
+
+        // TODO: implement specific AI profiles for quest mode.
+        String profile = "";
+        if (profileOverride.isEmpty()) {
+            String lastProfileChosen = FModel.getPreferences().getPref(FPref.UI_CURRENT_AI_PROFILE);
+            if (!AiProfileUtil.getProfilesDisplayList().contains(lastProfileChosen)) {
+                System.out.println("[AI Preferences] Unknown profile " + lastProfileChosen + " was requested, resetting to default.");
+                lastProfileChosen = "Default";
+                FModel.getPreferences().setPref(FPref.UI_CURRENT_AI_PROFILE, "Default");
+                FModel.getPreferences().save();
+            }
+            player.setRotateProfileEachGame(lastProfileChosen.equals(AiProfileUtil.AI_PROFILE_RANDOM_DUEL));
+            if (lastProfileChosen.equals(AiProfileUtil.AI_PROFILE_RANDOM_MATCH)) {
+                lastProfileChosen = AiProfileUtil.getRandomProfile();
+            }
+            System.out.println(TextUtil.concatNoSpace("[AI Preferences] AI profile ", lastProfileChosen,
+                    " was chosen for the lobby player ", player.getName(), "."));
+            profile = lastProfileChosen;
+        } else {
+            System.out.println(TextUtil.concatNoSpace("[Override] AI profile ", profileOverride,
+                    " was chosen for the lobby player ", player.getName(), "."));
+            profile = profileOverride;
+        }
+
+        assert (!profile.isEmpty());
+
+        player.setAiProfile(profile);
+        player.setAvatarIndex(avatarIndex);
+        player.setSleeveIndex(sleeveIndex);
+        return player;
+    }
+    public static Set<GoldfisherAIOption> convertAIOptions(Set<AIOption> aiOptions) {
+        return Collections.EMPTY_SET; //TODO this is wrong, do this better
+    }
+
+
 
     public static void setPlayerName() {
         final String oldPlayerName = FModel.getPreferences().getPref(FPref.PLAYER_NAME);

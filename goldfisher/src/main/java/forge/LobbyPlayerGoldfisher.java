@@ -1,6 +1,5 @@
 package forge;
 
-import forge.LobbyPlayer;
 import forge.game.Game;
 import forge.game.player.IGameEntitiesFactory;
 import forge.game.player.Player;
@@ -8,16 +7,16 @@ import forge.game.player.PlayerController;
 
 import java.util.Set;
 
-public class LobbyPlayerAi extends LobbyPlayer implements IGameEntitiesFactory {
+public class LobbyPlayerGoldfisher extends LobbyPlayer implements IGameEntitiesFactory {
 
     private String GoldfishProfile = "";
     private boolean rotateProfileEachGame;
     private boolean allowCheatShuffle;
     private boolean useSimulation;
 
-    public LobbyPlayerAi(String name, Set<AIOption> options) {
+    public LobbyPlayerGoldfisher(String name, Set<GoldfisherAIOption> options) {
         super(name);
-        if (options != null && options.contains(AIOption.USE_SIMULATION)) {
+        if (options != null && options.contains(GoldfisherAIOption.USE_SIMULATION)) {
             this.useSimulation = true;
         }
     }

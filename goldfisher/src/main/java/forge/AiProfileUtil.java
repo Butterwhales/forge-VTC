@@ -100,9 +100,9 @@ public class AiProfileUtil {
      */
     public static String getAIProp(final LobbyPlayer p, final AiProps fp0) {
         String val = null;
-        if (!(p instanceof LobbyPlayerAi))
+        if (!(p instanceof LobbyPlayerGoldfisher))
             return "";
-        String profile = ((LobbyPlayerAi) p).getAiProfile();
+        String profile = ((LobbyPlayerGoldfisher) p).getAiProfile();
        
         if (loadedProfiles.get(profile) != null) {
             val = loadedProfiles.get(profile).get(fp0);

@@ -1,5 +1,5 @@
 package forge;
 
-public enum AIOption {
+public enum GoldfisherAIOption {
     USE_SIMULATION
 }
