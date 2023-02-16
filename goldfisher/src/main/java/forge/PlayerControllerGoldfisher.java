@@ -1,6 +1,7 @@
 package forge;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -42,6 +43,8 @@ import forge.util.MyRandom;
 import forge.util.collect.FCollectionView;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import forge.game.card.CardPredicates;
+import forge.game.card.CardPredicates.Presets;
 
 import java.util.*;
 
@@ -587,6 +590,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {
 //        return !ComputerUtil.wantMulligan(player, cardsToReturn);
+        //todo implement want mulligan here
         return false;
     }
 
@@ -604,47 +608,76 @@ public class PlayerControllerGoldfisher extends PlayerController {
     public CardCollectionView londonMulliganReturnCards(final Player mulliganingPlayer, int cardsToReturn) {
         // TODO This is better than it was before, but still suboptimal (but fast).
         // Maybe score a bunch of hands based on projected hand size and return the "duds"
-//        CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
-//        int numLandsDesired = (mulliganingPlayer.getStartingHandSize() - cardsToReturn) / 2;
-//
-//        CardCollection toReturn = new CardCollection();
-//        for (int i = 0; i < cardsToReturn; i++) {
-//            hand.removeAll(toReturn);
-//
-//            CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
-//            int numLandsInHand = landsInHand.size() - CardLists.count(toReturn, Presets.LANDS);
-//
-//            // If we're flooding with lands, get rid of the worst land we have
-//            if (numLandsInHand > 0 && numLandsInHand > numLandsDesired) {
-//                CardCollection producingLands = CardLists.filter(landsInHand, Presets.LANDS_PRODUCING_MANA);
-//                CardCollection nonProducingLands = CardLists.filter(landsInHand, Predicates.not(Presets.LANDS_PRODUCING_MANA));
+        CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
+        //Ideally burn wants to have around 1 - 2 lands in its opener.
+        // If it has a very low average cmc it could keep a one lander
+        // TWO THINGS IT CARES ABOUT:
+        // Lands in hand : around 1-2
+        // Average cmc of hand
+        // Jared was here
+        // if the opening hand has 1 land and 2 or more one drops, Keep it.
+        // If the opening hand size it 5 or less opening hands with 1 land and 1 drop are keep-able
+        // rules after first mulligan
+        // int openingHandSize = mulliganingPlayer.getStartingHandSize();
+        // If number of lands >= 2
+        //       if numLandsInHand - (7-hand_size) <= 3
+        //             if(openingHandSize <= 5){
+        //                  Bottom down to 2 lands
+        //                  Then Bottom Highest CMC cards
+        //              }else{
+        //              Keep hand. Bottom down to 3 lands
+        //              Bottom highest cmc cards
+        //              }
+        // else if(openingHandSize == 5){
+        //      If (numLandsInHand == 1 && numOfOneDrops >= 2)
+        //               keep
+        //} else if(openingHandSize <= 4){
+        //      if (numLandsInHand >= 1)
+        //          Keep
+        // }
+        // otherwise mulligan
+
+        int openingHandSize = mulliganingPlayer.getStartingHandSize();
+
+        int numLandsDesired = (mulliganingPlayer.getStartingHandSize() - cardsToReturn) / 2;
+
+        CardCollection toReturn = new CardCollection();
+        for (int i = 0; i < cardsToReturn; i++) {
+            hand.removeAll(toReturn);
+
+            CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
+            int numLandsInHand = landsInHand.size() - CardLists.count(toReturn, Presets.LANDS);
+
+            // If we're flooding with lands, get rid of the worst land we have
+            if (numLandsInHand > 0 && numLandsInHand > numLandsDesired) {
+                CardCollection producingLands = CardLists.filter(landsInHand, Presets.LANDS_PRODUCING_MANA);
+                CardCollection nonProducingLands = CardLists.filter(landsInHand, Predicates.not(Presets.LANDS_PRODUCING_MANA));
 //                Card worstLand = nonProducingLands.isEmpty() ? ComputerUtilCard.getWorstLand(producingLands)
 //                        : ComputerUtilCard.getWorstLand(nonProducingLands);
 //                toReturn.add(worstLand);
-//                continue;
-//            }
-//
-//            // See if we'd scry something to the bottom in this situation. If we want to, probably get rid of it.
-//            CardCollection scryBottom = new CardCollection();
-//            for (Card c : hand) {
-//                // Lands are evaluated separately above, factoring in the number of cards to be returned to the library
-//                if (!c.isLand() && !toReturn.contains(c) && !willPutCardOnTop(c)) {
-//                    scryBottom.add(c);
-//                }
-//            }
-//            if (!scryBottom.isEmpty()) {
-//                CardLists.sortByCmcDesc(scryBottom);
-//                toReturn.add(scryBottom.getFirst()); // assume the max CMC one is worse since we're not guaranteed to have lands for it
-//                continue;
-//            }
-//
-//            // If we don't want to scry anything to the bottom, remove the worst card that we have in order to satisfy
-//            // the requirement
+                continue;
+            }
+
+            // See if we'd scry something to the bottom in this situation. If we want to, probably get rid of it.
+            CardCollection scryBottom = new CardCollection();
+            for (Card c : hand) {
+                // Lands are evaluated separately above, factoring in the number of cards to be returned to the library
+                if (!c.isLand() && !toReturn.contains(c) && !willPutCardOnTop(c)) {
+                    scryBottom.add(c);
+                }
+            }
+            if (!scryBottom.isEmpty()) {
+                CardLists.sortByCmcDesc(scryBottom);
+                toReturn.add(scryBottom.getFirst()); // assume the max CMC one is worse since we're not guaranteed to have lands for it
+                continue;
+            }
+
+            // If we don't want to scry anything to the bottom, remove the worst card that we have in order to satisfy
+            // the requirement
 //            toReturn.add(ComputerUtilCard.getWorstAI(hand));
-//        }
-//
-//        return CardCollection.getView(toReturn);
-        return null;
+        }
+
+        return CardCollection.getView(toReturn);
     }
 
     @Override
