@@ -1,14 +1,11 @@
 package forge;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-import forge.LobbyPlayer;
 import forge.ai.ability.ProtectAi;
-import forge.card.CardStateName;
 import forge.card.ColorSet;
 import forge.card.ICardFace;
 import forge.card.MagicColor;
@@ -24,7 +21,6 @@ import forge.game.ability.AbilityUtils;
 import forge.game.ability.ApiType;
 import forge.game.ability.effects.CharmEffect;
 import forge.game.card.*;
-import forge.game.card.CardPredicates.Presets;
 import forge.game.combat.Combat;
 import forge.game.cost.Cost;
 import forge.game.cost.CostPart;
@@ -34,7 +30,6 @@ import forge.game.keyword.KeywordInterface;
 import forge.game.mana.Mana;
 import forge.game.mana.ManaConversionMatrix;
 import forge.game.phase.PhaseHandler;
-import forge.game.phase.PhaseType;
 import forge.game.player.*;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.spellability.*;
@@ -44,13 +39,10 @@ import forge.item.PaperCard;
 import forge.util.Aggregates;
 import forge.util.ITriggerEvent;
 import forge.util.MyRandom;
-import forge.util.collect.FCollection;
 import forge.util.collect.FCollectionView;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.security.InvalidParameterException;
 import java.util.*;
 
 
@@ -59,15 +51,15 @@ import java.util.*;
  *
  * Handles phase skips for now.
  */
-public class PlayerControllerAi extends PlayerController {
-    private final AiController brains;
+public class PlayerControllerGoldfisher extends PlayerController {
+    private final GoldfisherController brains;
 
     private boolean pilotsNonAggroDeck = false;
 
-    public PlayerControllerAi(Game game, Player p, LobbyPlayer lp) {
+    public PlayerControllerGoldfisher(Game game, Player p, LobbyPlayer lp) {
         super(game, p, lp);
 
-        brains = new AiController(p, game);
+        brains = new GoldfisherController(p, game);
     }
 
     public boolean pilotsNonAggroDeck() {
@@ -94,7 +86,7 @@ public class PlayerControllerAi extends PlayerController {
         return abilities.get(0);
     }
 
-    public AiController getAi() {
+    public GoldfisherController getAi() {
         return brains;
     }
 
@@ -1219,8 +1211,7 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public CardCollectionView cheatShuffle(CardCollectionView list) {
-//        return brains.getBooleanProperty(AiProps.CHEAT_WITH_MANA_ON_SHUFFLE) ? brains.cheatShuffle(list) : list;
-        return null;
+        return brains.getBooleanProperty(AiProps.CHEAT_WITH_MANA_ON_SHUFFLE) ? brains.cheatShuffle(list) : list;
     }
 
     @Override

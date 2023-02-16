@@ -17,7 +17,6 @@
  */
 package forge;
 
-import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
@@ -26,38 +25,23 @@ import forge.ai.ability.ChangeZoneAi;
 import forge.ai.ability.ExploreAi;
 import forge.ai.ability.LearnAi;
 import forge.ai.simulation.SpellAbilityPicker;
-import forge.card.CardStateName;
-import forge.card.CardType;
-import forge.card.MagicColor;
-import forge.card.mana.ManaCost;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.game.*;
-import forge.game.ability.AbilityKey;
 import forge.game.ability.AbilityUtils;
 import forge.game.ability.ApiType;
-import forge.game.ability.SpellApiBased;
 import forge.game.card.*;
 import forge.game.card.CardPredicates.Accessors;
 import forge.game.card.CardPredicates.Presets;
 import forge.game.combat.Combat;
-import forge.game.combat.CombatUtil;
 import forge.game.cost.*;
 import forge.game.keyword.Keyword;
-import forge.game.mana.ManaCostBeingPaid;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.player.PlayerActionConfirmMode;
-import forge.game.replacement.ReplaceMoved;
 import forge.game.replacement.ReplacementEffect;
-import forge.game.replacement.ReplacementLayer;
 import forge.game.replacement.ReplacementType;
 import forge.game.spellability.*;
-import forge.game.staticability.StaticAbility;
-import forge.game.staticability.StaticAbilityDisableTriggers;
-import forge.game.staticability.StaticAbilityMustTarget;
-import forge.game.trigger.Trigger;
-import forge.game.trigger.TriggerType;
 import forge.game.trigger.WrappedAbility;
 import forge.game.zone.ZoneType;
 import forge.item.PaperCard;
@@ -65,8 +49,6 @@ import forge.util.Aggregates;
 import forge.util.ComparatorUtil;
 import forge.util.Expressions;
 import forge.util.MyRandom;
-import forge.util.collect.FCollectionView;
-import io.sentry.Breadcrumb;
 import io.sentry.Sentry;
 
 import java.util.*;
@@ -79,7 +61,7 @@ import java.util.*;
  * @author Forge
  * @version $Id$
  */
-public class AiController {
+public class GoldfisherController {
     private final Player player;
     private final Game game;
 //    private final AiCardMemory memory;
@@ -90,7 +72,7 @@ public class AiController {
     private SpellAbilityPicker simPicker;
     private int lastAttackAggression;
 
-    public AiController(final Player computerPlayer, final Game game0) {
+    public GoldfisherController(final Player computerPlayer, final Game game0) {
         player = computerPlayer;
         game = game0;
 //        memory = new AiCardMemory();
@@ -1386,16 +1368,15 @@ public class AiController {
 //        return 0;
 //    }
 
-//    public boolean getBooleanProperty(AiProps propName) {
-//        String prop = AiProfileUtil.getAIProp(getPlayer().getLobbyPlayer(), propName);
-//
-//        if (prop == null || prop.isEmpty()) {
-//            return Boolean.parseBoolean(propName.getDefault());
-//        }
-//
-//        return Boolean.parseBoolean(prop);
-//        return null;
-//    }
+    public boolean getBooleanProperty(AiProps propName) {
+        String prop = AiProfileUtil.getAIProp(getPlayer().getLobbyPlayer(), propName);
+
+        if (prop == null || prop.isEmpty()) {
+            return Boolean.parseBoolean(propName.getDefault());
+        }
+
+        return Boolean.parseBoolean(prop);
+    }
 
 //    public AiPlayDecision canPlayFromEffectAI(Spell spell, boolean mandatory, boolean withoutPayingManaCost) {
 //        int damage = ComputerUtil.getDamageForPlaying(player, spell);

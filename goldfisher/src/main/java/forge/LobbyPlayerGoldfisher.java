@@ -39,8 +39,8 @@ public class LobbyPlayerGoldfisher extends LobbyPlayer implements IGameEntitiesF
         this.rotateProfileEachGame = rotateProfileEachGame;
     }
 
-    private PlayerControllerAi createControllerFor(Player ai) {
-        PlayerControllerAi result = new PlayerControllerAi(ai.getGame(), ai, this);
+    private PlayerControllerGoldfisher createControllerFor(Player ai) {
+        PlayerControllerGoldfisher result = new PlayerControllerGoldfisher(ai.getGame(), ai, this);
         result.setUseSimulation(useSimulation);
         result.allowCheatShuffle(allowCheatShuffle);
         return result;
