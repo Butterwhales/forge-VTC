@@ -604,6 +604,12 @@ public class PlayerControllerGoldfisher extends PlayerController {
         return null;
     }
 
+    /**
+     * This is what Goldfisher uses to decide if it is going to keep a hand or mulligan it
+     * @param mulliganingPlayer
+     * @param cardsToReturn
+     * @return
+     */
     @Override
     public CardCollectionView londonMulliganReturnCards(final Player mulliganingPlayer, int cardsToReturn) {
         // TODO This is better than it was before, but still suboptimal (but fast).
