@@ -6,12 +6,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -75,14 +75,14 @@ import java.util.*;
  * <p>
  * AiController class.
  * </p>
- * 
+ *
  * @author Forge
  * @version $Id$
  */
 public class AiController {
     private final Player player;
     private final Game game;
-    private final AiCardMemory memory;
+//    private final AiCardMemory memory;
     private Combat predictedCombat;
     private Combat predictedCombatNextTurn;
     private boolean cheatShuffle;
@@ -93,7 +93,7 @@ public class AiController {
     public AiController(final Player computerPlayer, final Game game0) {
         player = computerPlayer;
         game = game0;
-        memory = new AiCardMemory();
+//        memory = new AiCardMemory();
         simPicker = new SpellAbilityPicker(game, player);
     }
 
@@ -128,32 +128,34 @@ public class AiController {
         return player;
     }
 
-    public AiCardMemory getCardMemory() {
-        return memory;
-    }
+//    public AiCardMemory getCardMemory() {
+//        return memory;
+//    }
 
     public Combat getPredictedCombat() {
-        if (predictedCombat == null) {
-            AiAttackController aiAtk = new AiAttackController(player);
-            predictedCombat = new Combat(player);
-            aiAtk.declareAttackers(predictedCombat);
-        }
-        return predictedCombat;
+//        if (predictedCombat == null) {
+//            AiAttackController aiAtk = new AiAttackController(player);
+//            predictedCombat = new Combat(player);
+//            aiAtk.declareAttackers(predictedCombat);
+//        }
+//        return predictedCombat;
+        return null;
     }
 
     public Combat getPredictedCombatNextTurn() {
-        if (predictedCombatNextTurn == null) {
-            AiAttackController aiAtk = new AiAttackController(player, true);
-            predictedCombatNextTurn = new Combat(player);
-            aiAtk.declareAttackers(predictedCombatNextTurn);
-        }
-        return predictedCombatNextTurn;
+//        if (predictedCombatNextTurn == null) {
+//            AiAttackController aiAtk = new AiAttackController(player, true);
+//            predictedCombatNextTurn = new Combat(player);
+//            aiAtk.declareAttackers(predictedCombatNextTurn);
+//        }
+//        return predictedCombatNextTurn;
+        return null;
     }
 
     private List<SpellAbility> getPossibleETBCounters() {
         CardCollection all = new CardCollection(player.getCardsIn(ZoneType.Hand));
         CardCollectionView ccvPlayerLibrary = player.getCardsIn(ZoneType.Library);
-        
+
         all.addAll(player.getCardsIn(ZoneType.Exile));
         all.addAll(player.getCardsIn(ZoneType.Graveyard));
         if (!ccvPlayerLibrary.isEmpty()) {
@@ -175,7 +177,7 @@ public class AiController {
         }
         return spellAbilities;
     }
-    
+
     // look for cards on the battlefield that should prevent the AI from using that spellability
     private boolean checkCurseEffects(final SpellAbility sa) {
         CardCollectionView ccvGameBattlefield = CardLists.filter(game.getCardsIn(ZoneType.Battlefield), CardPredicates.hasSVar("AICurseEffect"));
@@ -211,151 +213,151 @@ public class AiController {
     }
 
     public boolean checkETBEffects(final Card card, final SpellAbility sa, final ApiType api) {
-        final Player activatingPlayer = sa.getActivatingPlayer();
+//        final Player activatingPlayer = sa.getActivatingPlayer();
+//
+//        // for xPaid stuff
+//        card.setCastSA(sa);
+//
+//        // Replacement effects
+//        for (final ReplacementEffect re : card.getReplacementEffects()) {
+//            // These Replacements all care for ETB effects
+//            if (!(re instanceof ReplaceMoved)) {
+//                continue;
+//            }
+//
+//            if (!ZoneType.Battlefield.toString().equals(re.getParam("Destination"))) {
+//                continue;
+//            }
+//
+//            if (re.hasParam("ValidCard")) {
+//                String validCard = re.getParam("ValidCard");
+//                if (!validCard.contains("Self")) {
+//                    continue;
+//                }
+//                if (validCard.contains("notkicked")) {
+//                    if (sa.isKicked()) {
+//                        continue;
+//                    }
+//                } else if (validCard.contains("kicked")) {
+//                    if (validCard.contains("kicked ")) { // want a specific kicker
+//                        String s = validCard.split("kicked ")[1];
+//                        if ("1".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker1)) continue;
+//                        if ("2".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker2)) continue;
+//                    } else if (!sa.isKicked()) { // otherwise just any must be present
+//                        continue;
+//                    }
+//                }
+//            }
+//
+//            if (!re.requirementsCheck(game)) {
+//                continue;
+//            }
+//            SpellAbility exSA = re.getOverridingAbility();
+//
+//            if (exSA != null) {
+//                exSA = exSA.copy(activatingPlayer);
+//
+//                // ETBReplacement uses overriding abilities.
+//                // These checks only work if the Executing SpellAbility is an Ability_Sub.
+//                if ((exSA instanceof AbilitySub) && !doTrigger(exSA, false)) {
+//                    return false;
+//                }
+//            }
+//        }
+//
+//        boolean rightapi = false;
+//
+//        // Trigger play improvements
+//        for (final Trigger tr : card.getTriggers()) {
+//            // These triggers all care for ETB effects
+//
+//            if (tr.getMode() != TriggerType.ChangesZone) {
+//                continue;
+//            }
+//
+//            if (!ZoneType.Battlefield.toString().equals(tr.getParam("Destination"))) {
+//                continue;
+//            }
+//
+//            final Map<AbilityKey, Object> runParams = AbilityKey.mapFromCard(tr.getHostCard());
+//            runParams.put(AbilityKey.Destination, ZoneType.Battlefield.name());
+//            if (StaticAbilityDisableTriggers.disabled(game, tr, runParams)) {
+//                return api == null;
+//            }
+//
+//            if (tr.hasParam("ValidCard")) {
+//                String validCard = tr.getParam("ValidCard");
+//                if (!validCard.contains("Self")) {
+//                    continue;
+//                }
+//                if (validCard.contains("notkicked")) {
+//                    if (sa.isKicked()) {
+//                        continue;
+//                    }
+//                } else if (validCard.contains("kicked")) {
+//                    if (validCard.contains("kicked ")) { // want a specific kicker
+//                        String s = validCard.split("kicked ")[1];
+//                        if ("1".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker1)) continue;
+//                        if ("2".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker2)) continue;
+//                    } else if (!sa.isKicked()) {
+//                        continue;
+//                    }
+//                }
+//            }
+//
+//            if (!tr.requirementsCheck(game)) {
+//                continue;
+//            }
+//
+//            // if trigger is not mandatory - no problem
+//            if (tr.hasParam("OptionalDecider") && api == null) {
+//                continue;
+//            }
+//
+//            SpellAbility exSA = tr.ensureAbility().copy(activatingPlayer);
+//
+//            if (api != null) {
+//                if (exSA.getApi() != api) {
+//                    continue;
+//                }
+//                rightapi = true;
+//                if (!(exSA instanceof AbilitySub)) {
+//                    if (!ComputerUtilCost.canPayCost(exSA, player, true)) {
+//                        return false;
+//                    }
+//                }
+//            }
+//
+//            exSA.setTrigger(tr);
+//            // need to set TriggeredObject
+//            exSA.setTriggeringObject(AbilityKey.Card, card);
+//
+//            // for trigger test, need to ignore the conditions
+//            SpellAbilityCondition cons = exSA.getConditions();
+//            if (cons != null) {
+//                String pres = cons.getIsPresent();
+//                if (pres != null && pres.matches("Card\\.(Strictly)?Self")) {
+//                    cons.setIsPresent(null);
+//                }
+//            }
+//
+//            // Run non-mandatory trigger.
+//            // These checks only work if the Executing SpellAbility is an Ability_Sub.
+//            if (exSA instanceof AbilitySub && !doTrigger(exSA, false)) {
+//                // AI would not run this trigger if given the chance
+//                if (api == null && card.isCreature() && !ComputerUtilAbility.isFullyTargetable(exSA) &&
+//                        (ComputerUtil.aiLifeInDanger(activatingPlayer, true, 0) || "BadETB".equals(tr.getParam("AILogic")))) {
+//                    // trigger will not run due to lack of targets and we 1. desperately need a creature or 2. are happy about that
+//                    continue;
+//                }
+//                return false;
+//            }
+//        }
+//        if (api != null && !rightapi) {
+//            return false;
+//        }
 
-        // for xPaid stuff
-        card.setCastSA(sa);
-
-        // Replacement effects
-        for (final ReplacementEffect re : card.getReplacementEffects()) {
-            // These Replacements all care for ETB effects
-            if (!(re instanceof ReplaceMoved)) {
-                continue;
-            }
-
-            if (!ZoneType.Battlefield.toString().equals(re.getParam("Destination"))) {
-                continue;
-            }
-
-            if (re.hasParam("ValidCard")) {
-                String validCard = re.getParam("ValidCard");
-                if (!validCard.contains("Self")) {
-                    continue;
-                }
-                if (validCard.contains("notkicked")) {
-                    if (sa.isKicked()) {
-                        continue;
-                    }
-                } else if (validCard.contains("kicked")) {
-                    if (validCard.contains("kicked ")) { // want a specific kicker
-                        String s = validCard.split("kicked ")[1];
-                        if ("1".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker1)) continue;
-                        if ("2".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker2)) continue;
-                    } else if (!sa.isKicked()) { // otherwise just any must be present
-                        continue;
-                    }
-                }
-            }
-
-            if (!re.requirementsCheck(game)) {
-                continue;
-            }
-            SpellAbility exSA = re.getOverridingAbility();
-
-            if (exSA != null) {
-                exSA = exSA.copy(activatingPlayer);
-
-                // ETBReplacement uses overriding abilities.
-                // These checks only work if the Executing SpellAbility is an Ability_Sub.
-                if ((exSA instanceof AbilitySub) && !doTrigger(exSA, false)) {
-                    return false;
-                }
-            }
-        }
-
-        boolean rightapi = false;
-
-        // Trigger play improvements
-        for (final Trigger tr : card.getTriggers()) {
-            // These triggers all care for ETB effects
-
-            if (tr.getMode() != TriggerType.ChangesZone) {
-                continue;
-            }
-
-            if (!ZoneType.Battlefield.toString().equals(tr.getParam("Destination"))) {
-                continue;
-            }
-
-            final Map<AbilityKey, Object> runParams = AbilityKey.mapFromCard(tr.getHostCard());
-            runParams.put(AbilityKey.Destination, ZoneType.Battlefield.name());
-            if (StaticAbilityDisableTriggers.disabled(game, tr, runParams)) {
-                return api == null;
-            }
-
-            if (tr.hasParam("ValidCard")) {
-                String validCard = tr.getParam("ValidCard");
-                if (!validCard.contains("Self")) {
-                    continue;
-                }
-                if (validCard.contains("notkicked")) {
-                    if (sa.isKicked()) {
-                        continue;
-                    }
-                } else if (validCard.contains("kicked")) {
-                    if (validCard.contains("kicked ")) { // want a specific kicker
-                        String s = validCard.split("kicked ")[1];
-                        if ("1".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker1)) continue;
-                        if ("2".equals(s) && !sa.isOptionalCostPaid(OptionalCost.Kicker2)) continue;
-                    } else if (!sa.isKicked()) { 
-                        continue;
-                    }
-                }
-            }
-
-            if (!tr.requirementsCheck(game)) {
-                continue;
-            }
-
-            // if trigger is not mandatory - no problem
-            if (tr.hasParam("OptionalDecider") && api == null) {
-                continue;
-            }
-
-            SpellAbility exSA = tr.ensureAbility().copy(activatingPlayer);
-
-            if (api != null) {
-                if (exSA.getApi() != api) {
-                    continue;
-                }
-                rightapi = true;
-                if (!(exSA instanceof AbilitySub)) {
-                    if (!ComputerUtilCost.canPayCost(exSA, player, true)) {
-                        return false;
-                    }
-                }
-            }
-
-            exSA.setTrigger(tr);
-            // need to set TriggeredObject
-            exSA.setTriggeringObject(AbilityKey.Card, card);
-
-            // for trigger test, need to ignore the conditions
-            SpellAbilityCondition cons = exSA.getConditions();
-            if (cons != null) {
-                String pres = cons.getIsPresent();
-                if (pres != null && pres.matches("Card\\.(Strictly)?Self")) {
-                    cons.setIsPresent(null);
-                }
-            }
-
-            // Run non-mandatory trigger.
-            // These checks only work if the Executing SpellAbility is an Ability_Sub.
-            if (exSA instanceof AbilitySub && !doTrigger(exSA, false)) {
-                // AI would not run this trigger if given the chance
-                if (api == null && card.isCreature() && !ComputerUtilAbility.isFullyTargetable(exSA) &&
-                        (ComputerUtil.aiLifeInDanger(activatingPlayer, true, 0) || "BadETB".equals(tr.getParam("AILogic")))) {
-                    // trigger will not run due to lack of targets and we 1. desperately need a creature or 2. are happy about that
-                    continue;
-                }
-                return false;
-            }
-        }
-        if (api != null && !rightapi) {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     private static List<SpellAbility> getPlayableCounters(final CardCollection l) {
@@ -402,253 +404,256 @@ public class AiController {
         landList = CardLists.filter(landList, new Predicate<Card>() {
             @Override
             public boolean apply(final Card c) {
-                CardCollectionView battlefield = player.getCardsIn(ZoneType.Battlefield);
-                if (canPlaySpellBasic(c, null) != AiPlayDecision.WillPlay) {
-                    return false;
-                }
-                String name = c.getName();
-                if (c.getType().isLegendary() && !name.equals("Flagstones of Trokair")) {
-                    if (Iterables.any(battlefield, CardPredicates.nameEquals(name))) {
-                        return false;
-                    }
-                }
+//                CardCollectionView battlefield = player.getCardsIn(ZoneType.Battlefield);
+//                if (canPlaySpellBasic(c, null) != AiPlayDecision.WillPlay) {
+//                    return false;
+//                }
+//                String name = c.getName();
+//                if (c.getType().isLegendary() && !name.equals("Flagstones of Trokair")) {
+//                    if (Iterables.any(battlefield, CardPredicates.nameEquals(name))) {
+//                        return false;
+//                    }
+//                }
+//
+//                final CardCollectionView hand = player.getCardsIn(ZoneType.Hand);
+//                CardCollection lands = new CardCollection(battlefield);
+//                lands.addAll(hand);
+//                lands = CardLists.filter(lands, Presets.LANDS);
+//                int maxCmcInHand = Aggregates.max(hand, Accessors.fnGetCmc);
+//
+//                if (lands.size() >= Math.max(maxCmcInHand, 6)) {
+//                    // don't play MDFC land if other side is spell and enough lands are available
+//                    if (!c.isLand() || (c.isModal() && !c.getState(CardStateName.Modal).getType().isLand())) {
+//                        return false;
+//                    }
+//
+//                    // don't play the land if it has cycling and enough lands are available
+//                    final FCollectionView<SpellAbility> spellAbilities = c.getSpellAbilities();
+//                    for (final SpellAbility sa : spellAbilities) {
+//                        if (sa.isCycling()) {
+//                            return false;
+//                        }
+//                    }
+//                }
 
-                final CardCollectionView hand = player.getCardsIn(ZoneType.Hand);
-                CardCollection lands = new CardCollection(battlefield);
-                lands.addAll(hand);
-                lands = CardLists.filter(lands, Presets.LANDS);
-                int maxCmcInHand = Aggregates.max(hand, Accessors.fnGetCmc);
-
-                if (lands.size() >= Math.max(maxCmcInHand, 6)) {
-                    // don't play MDFC land if other side is spell and enough lands are available
-                    if (!c.isLand() || (c.isModal() && !c.getState(CardStateName.Modal).getType().isLand())) {
-                        return false;
-                    }
-
-                    // don't play the land if it has cycling and enough lands are available
-                    final FCollectionView<SpellAbility> spellAbilities = c.getSpellAbilities();
-                    for (final SpellAbility sa : spellAbilities) {
-                        if (sa.isCycling()) {
-                            return false;
-                        }
-                    }
-                }
-
-                return player.canPlayLand(c);
+//                return player.canPlayLand(c);
+                return false;
             }
         });
         return landList;
     }
 
     private Card chooseBestLandToPlay(CardCollection landList) {
-        if (landList.isEmpty()) {
-            return null;
-        }
-
-        CardCollection nonLandsInHand = CardLists.filter(player.getCardsIn(ZoneType.Hand), Predicates.not(Presets.LANDS));
-
-        // Some considerations for Momir/MoJhoSto
-        boolean hasMomir = player.isCardInCommand("Momir Vig, Simic Visionary Avatar");
-        if (hasMomir && nonLandsInHand.isEmpty()) {
-            // Only do this if we have an all-basic land hand, which covers both stock Momir and MoJhoSto modes
-            // and also a custom Vanguard setup with a customized basic land deck and Momir as the avatar.
-            String landStrategy = getProperty(AiProps.MOMIR_BASIC_LAND_STRATEGY);
-            if (landStrategy.equalsIgnoreCase("random")) {
-                // Pick a completely random basic land
-                return Aggregates.random(landList);
-            } else if (landStrategy.toLowerCase().startsWith("preforder:")) {
-                // Pick a basic land in order of preference, or play a random one if nothing is preferred
-                String order = landStrategy.substring(10);
-                for (char c : order.toCharArray()) {
-                    byte color = MagicColor.fromName(c);
-                    for (Card land : landList) {
-                        for (final SpellAbility m : ComputerUtilMana.getAIPlayableMana(land)) {
-                            if (m.canProduce(MagicColor.toShortString(color))) {
-                                return land;
-                            }
-                        }
-                    }
-                }
-                return Aggregates.random(landList);
-            }
-            // If nothing is done here, proceeds to the default land picking strategy
-        }
-
-        //Skip reflected lands.
-        CardCollection unreflectedLands = new CardCollection(landList);
-        for (Card l : landList) {
-            if (l.isReflectedLand()) {
-                unreflectedLands.remove(l);
-            }
-        }
-        if (!unreflectedLands.isEmpty()) {
-            landList = unreflectedLands;
-        }
-
-        //try to skip lands that enter the battlefield tapped
-        if (!nonLandsInHand.isEmpty()) {
-            CardCollection nonTappedLands = new CardCollection();
-            for (Card land : landList) {
-                // check replacement effects if land would enter tapped or not
-                final Map<AbilityKey, Object> repParams = AbilityKey.mapFromAffected(land);
-                repParams.put(AbilityKey.Origin, land.getZone().getZoneType());
-                repParams.put(AbilityKey.Destination, ZoneType.Battlefield);
-                repParams.put(AbilityKey.Source, land);
-
-                boolean foundTapped = false;
-                for (ReplacementEffect re : player.getGame().getReplacementHandler().getReplacementList(ReplacementType.Moved, repParams, ReplacementLayer.Other)) {
-                    SpellAbility reSA = re.ensureAbility();
-                    if (reSA == null || !ApiType.Tap.equals(reSA.getApi())) {
-                        continue;
-                    }
-                    reSA.setActivatingPlayer(reSA.getHostCard().getController(), true);
-                    if (reSA.metConditions()) {
-                        foundTapped = true;
-                        break;
-                    }
-                }
-
-                // TODO if this is the only source for a color we need badly prioritize it instead
-                if (foundTapped) {
-                    continue;
-                }
-
-                nonTappedLands.add(land);
-            }
-            if (!nonTappedLands.isEmpty()) {
-                landList = nonTappedLands;
-            }
-        }
-
-        // Choose first land to be able to play a one drop
-        if (player.getLandsInPlay().isEmpty()) {
-            CardCollection oneDrops = CardLists.filter(nonLandsInHand, CardPredicates.hasCMC(1));
-            for (int i = 0; i < MagicColor.WUBRG.length; i++) {
-                byte color = MagicColor.WUBRG[i];
-                if (Iterables.any(oneDrops, CardPredicates.isColor(color))) {
-                    for (Card land : landList) {
-                        if (land.getType().hasSubtype(MagicColor.Constant.BASIC_LANDS.get(i))) {
-                            return land;
-                        }
-                        for (final SpellAbility m : ComputerUtilMana.getAIPlayableMana(land)) {
-                            if (m.canProduce(MagicColor.toShortString(color))) {
-                                return land;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //play lands with a basic type that is needed the most
-        final CardCollectionView landsInBattlefield = player.getCardsIn(ZoneType.Battlefield);
-        final List<String> basics = Lists.newArrayList();
-
-        // what types can I go get?
-        for (final String name : MagicColor.Constant.BASIC_LANDS) {
-            if (!CardLists.getType(landList, name).isEmpty()) {
-                basics.add(name);
-            }
-        }
-        if (!basics.isEmpty()) {
-            // Which basic land is least available
-            int minSize = Integer.MAX_VALUE;
-            String minType = null;
-
-            for (String b : basics) {
-                final int num = CardLists.getType(landsInBattlefield, b).size();
-                if (num < minSize) {
-                    minType = b;
-                    minSize = num;
-                }
-            }
-
-            if (minType != null) {
-                landList = CardLists.getType(landList, minType);
-            }
-
-            // pick dual lands if available
-            if (Iterables.any(landList, Predicates.not(Presets.BASIC_LANDS))) {
-                landList = CardLists.filter(landList, Predicates.not(Presets.BASIC_LANDS));
-            }
-        }
-        return landList.get(0);
+//        if (landList.isEmpty()) {
+//            return null;
+//        }
+//
+//        CardCollection nonLandsInHand = CardLists.filter(player.getCardsIn(ZoneType.Hand), Predicates.not(Presets.LANDS));
+//
+//        // Some considerations for Momir/MoJhoSto
+//        boolean hasMomir = player.isCardInCommand("Momir Vig, Simic Visionary Avatar");
+//        if (hasMomir && nonLandsInHand.isEmpty()) {
+//            // Only do this if we have an all-basic land hand, which covers both stock Momir and MoJhoSto modes
+//            // and also a custom Vanguard setup with a customized basic land deck and Momir as the avatar.
+//            String landStrategy = getProperty(AiProps.MOMIR_BASIC_LAND_STRATEGY);
+//            if (landStrategy.equalsIgnoreCase("random")) {
+//                // Pick a completely random basic land
+//                return Aggregates.random(landList);
+//            } else if (landStrategy.toLowerCase().startsWith("preforder:")) {
+//                // Pick a basic land in order of preference, or play a random one if nothing is preferred
+//                String order = landStrategy.substring(10);
+//                for (char c : order.toCharArray()) {
+//                    byte color = MagicColor.fromName(c);
+//                    for (Card land : landList) {
+//                        for (final SpellAbility m : ComputerUtilMana.getAIPlayableMana(land)) {
+//                            if (m.canProduce(MagicColor.toShortString(color))) {
+//                                return land;
+//                            }
+//                        }
+//                    }
+//                }
+//                return Aggregates.random(landList);
+//            }
+//            // If nothing is done here, proceeds to the default land picking strategy
+//        }
+//
+//        //Skip reflected lands.
+//        CardCollection unreflectedLands = new CardCollection(landList);
+//        for (Card l : landList) {
+//            if (l.isReflectedLand()) {
+//                unreflectedLands.remove(l);
+//            }
+//        }
+//        if (!unreflectedLands.isEmpty()) {
+//            landList = unreflectedLands;
+//        }
+//
+//        //try to skip lands that enter the battlefield tapped
+//        if (!nonLandsInHand.isEmpty()) {
+//            CardCollection nonTappedLands = new CardCollection();
+//            for (Card land : landList) {
+//                // check replacement effects if land would enter tapped or not
+//                final Map<AbilityKey, Object> repParams = AbilityKey.mapFromAffected(land);
+//                repParams.put(AbilityKey.Origin, land.getZone().getZoneType());
+//                repParams.put(AbilityKey.Destination, ZoneType.Battlefield);
+//                repParams.put(AbilityKey.Source, land);
+//
+//                boolean foundTapped = false;
+//                for (ReplacementEffect re : player.getGame().getReplacementHandler().getReplacementList(ReplacementType.Moved, repParams, ReplacementLayer.Other)) {
+//                    SpellAbility reSA = re.ensureAbility();
+//                    if (reSA == null || !ApiType.Tap.equals(reSA.getApi())) {
+//                        continue;
+//                    }
+//                    reSA.setActivatingPlayer(reSA.getHostCard().getController(), true);
+//                    if (reSA.metConditions()) {
+//                        foundTapped = true;
+//                        break;
+//                    }
+//                }
+//
+//                // TODO if this is the only source for a color we need badly prioritize it instead
+//                if (foundTapped) {
+//                    continue;
+//                }
+//
+//                nonTappedLands.add(land);
+//            }
+//            if (!nonTappedLands.isEmpty()) {
+//                landList = nonTappedLands;
+//            }
+//        }
+//
+//        // Choose first land to be able to play a one drop
+//        if (player.getLandsInPlay().isEmpty()) {
+//            CardCollection oneDrops = CardLists.filter(nonLandsInHand, CardPredicates.hasCMC(1));
+//            for (int i = 0; i < MagicColor.WUBRG.length; i++) {
+//                byte color = MagicColor.WUBRG[i];
+//                if (Iterables.any(oneDrops, CardPredicates.isColor(color))) {
+//                    for (Card land : landList) {
+//                        if (land.getType().hasSubtype(MagicColor.Constant.BASIC_LANDS.get(i))) {
+//                            return land;
+//                        }
+//                        for (final SpellAbility m : ComputerUtilMana.getAIPlayableMana(land)) {
+//                            if (m.canProduce(MagicColor.toShortString(color))) {
+//                                return land;
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        //play lands with a basic type that is needed the most
+//        final CardCollectionView landsInBattlefield = player.getCardsIn(ZoneType.Battlefield);
+//        final List<String> basics = Lists.newArrayList();
+//
+//        // what types can I go get?
+//        for (final String name : MagicColor.Constant.BASIC_LANDS) {
+//            if (!CardLists.getType(landList, name).isEmpty()) {
+//                basics.add(name);
+//            }
+//        }
+//        if (!basics.isEmpty()) {
+//            // Which basic land is least available
+//            int minSize = Integer.MAX_VALUE;
+//            String minType = null;
+//
+//            for (String b : basics) {
+//                final int num = CardLists.getType(landsInBattlefield, b).size();
+//                if (num < minSize) {
+//                    minType = b;
+//                    minSize = num;
+//                }
+//            }
+//
+//            if (minType != null) {
+//                landList = CardLists.getType(landList, minType);
+//            }
+//
+//            // pick dual lands if available
+//            if (Iterables.any(landList, Predicates.not(Presets.BASIC_LANDS))) {
+//                landList = CardLists.filter(landList, Predicates.not(Presets.BASIC_LANDS));
+//            }
+//        }
+//        return landList.get(0);
+        return null;
     }
 
     // if return true, go to next phase
     private SpellAbility chooseCounterSpell(final List<SpellAbility> possibleCounters) {
-        if (possibleCounters == null || possibleCounters.isEmpty()) {
-            return null;
-        }
-        SpellAbility bestSA = null;
-        int bestRestriction = Integer.MIN_VALUE;
-
-        for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(possibleCounters, player)) {
-            SpellAbility currentSA = sa;
-            sa.setActivatingPlayer(player, true);
-            // check everything necessary
-
-            AiPlayDecision opinion = canPlayAndPayFor(currentSA);
-            //PhaseHandler ph = game.getPhaseHandler();
-            // System.out.printf("Ai thinks '%s' of %s @ %s %s >>> \n", opinion, sa, Lang.getPossesive(ph.getPlayerTurn().getName()), ph.getPhase());
-            if (opinion == AiPlayDecision.WillPlay) {
-                if (bestSA == null) {
-                    bestSA = currentSA;
-                    bestRestriction = ComputerUtil.counterSpellRestriction(player, currentSA);
-                } else {
-                    // Compare bestSA with this SA
-                    final int restrictionLevel = ComputerUtil.counterSpellRestriction(player, currentSA);
-    
-                    if (restrictionLevel > bestRestriction) {
-                        bestRestriction = restrictionLevel;
-                        bestSA = currentSA;
-                    }
-                }
-            }
-        }
-
-        // TODO - "Look" at Targeted SA and "calculate" the threshold
-        // if (bestRestriction < targetedThreshold) return false;
-        return bestSA;
+//        if (possibleCounters == null || possibleCounters.isEmpty()) {
+//            return null;
+//        }
+//        SpellAbility bestSA = null;
+//        int bestRestriction = Integer.MIN_VALUE;
+//
+//        for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(possibleCounters, player)) {
+//            SpellAbility currentSA = sa;
+//            sa.setActivatingPlayer(player, true);
+//            // check everything necessary
+//
+//            AiPlayDecision opinion = canPlayAndPayFor(currentSA);
+//            //PhaseHandler ph = game.getPhaseHandler();
+//            // System.out.printf("Ai thinks '%s' of %s @ %s %s >>> \n", opinion, sa, Lang.getPossesive(ph.getPlayerTurn().getName()), ph.getPhase());
+//            if (opinion == AiPlayDecision.WillPlay) {
+//                if (bestSA == null) {
+//                    bestSA = currentSA;
+//                    bestRestriction = ComputerUtil.counterSpellRestriction(player, currentSA);
+//                } else {
+//                    // Compare bestSA with this SA
+//                    final int restrictionLevel = ComputerUtil.counterSpellRestriction(player, currentSA);
+//
+//                    if (restrictionLevel > bestRestriction) {
+//                        bestRestriction = restrictionLevel;
+//                        bestSA = currentSA;
+//                    }
+//                }
+//            }
+//        }
+//
+//        // TODO - "Look" at Targeted SA and "calculate" the threshold
+//        // if (bestRestriction < targetedThreshold) return false;
+//        return bestSA;
+        return null;
     }
 
     public SpellAbility predictSpellToCastInMain2(ApiType exceptSA) {
         return predictSpellToCastInMain2(exceptSA, true);
     }
     private SpellAbility predictSpellToCastInMain2(ApiType exceptSA, boolean handOnly) {
-        if (!getBooleanProperty(AiProps.PREDICT_SPELLS_FOR_MAIN2)) {
-            return null;
-        }
-
-        final CardCollectionView cards = handOnly ? player.getCardsIn(ZoneType.Hand) :
-            ComputerUtilAbility.getAvailableCards(game, player);
-
-        List<SpellAbility> all = ComputerUtilAbility.getSpellAbilities(cards, player);
-
-        try {
-            Collections.sort(all, saComparator); // put best spells first
-        }
-        catch (IllegalArgumentException ex) {
-            System.err.println(ex.getMessage());
-            String assertex = ComparatorUtil.verifyTransitivity(saComparator, all);
-            Sentry.captureMessage(ex.getMessage() + "\nAssertionError [verifyTransitivity]: " + assertex);
-        }
-
-        for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(all, player)) {
-            ApiType saApi = sa.getApi();
-            
-            if (saApi == ApiType.Counter || saApi == exceptSA) {
-                continue;
-            }
-            sa.setActivatingPlayer(player, true);
-            // TODO: this currently only works as a limited prediction of permanent spells.
-            // Ideally this should cast canPlaySa to determine that the AI is truly able/willing to cast a spell,
-            // but that is currently difficult to implement due to various side effects leading to stack overflow.
-            Card host = sa.getHostCard();
-            if (sa instanceof SpellPermanent && host != null && !host.isLand() && !ComputerUtil.castPermanentInMain1(player, sa) && ComputerUtilCost.canPayCost(sa, player, false)) {
-                return sa;
-            }
-        }
+//        if (!getBooleanProperty(AiProps.PREDICT_SPELLS_FOR_MAIN2)) {
+//            return null;
+//        }
+//
+//        final CardCollectionView cards = handOnly ? player.getCardsIn(ZoneType.Hand) :
+//            ComputerUtilAbility.getAvailableCards(game, player);
+//
+//        List<SpellAbility> all = ComputerUtilAbility.getSpellAbilities(cards, player);
+//
+//        try {
+//            Collections.sort(all, saComparator); // put best spells first
+//        }
+//        catch (IllegalArgumentException ex) {
+//            System.err.println(ex.getMessage());
+//            String assertex = ComparatorUtil.verifyTransitivity(saComparator, all);
+//            Sentry.captureMessage(ex.getMessage() + "\nAssertionError [verifyTransitivity]: " + assertex);
+//        }
+//
+//        for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(all, player)) {
+//            ApiType saApi = sa.getApi();
+//
+//            if (saApi == ApiType.Counter || saApi == exceptSA) {
+//                continue;
+//            }
+//            sa.setActivatingPlayer(player, true);
+//            // TODO: this currently only works as a limited prediction of permanent spells.
+//            // Ideally this should cast canPlaySa to determine that the AI is truly able/willing to cast a spell,
+//            // but that is currently difficult to implement due to various side effects leading to stack overflow.
+//            Card host = sa.getHostCard();
+//            if (sa instanceof SpellPermanent && host != null && !host.isLand() && !ComputerUtil.castPermanentInMain1(player, sa) && ComputerUtilCost.canPayCost(sa, player, false)) {
+//                return sa;
+//            }
+//        }
         return null;
     }
 
@@ -662,158 +667,158 @@ public class AiController {
         return reserveManaSources(sa, phaseType, enemy, true, null);
     }
     public boolean reserveManaSources(SpellAbility sa, PhaseType phaseType, boolean enemy, boolean forNextSpell, SpellAbility exceptForThisSa) {
-        ManaCostBeingPaid cost = ComputerUtilMana.calculateManaCost(sa, true, 0);
-        CardCollection manaSources = ComputerUtilMana.getManaSourcesToPayCost(cost, sa, player);
-
-        // used for chained spells where two spells need to be cast in succession
-        if (exceptForThisSa != null) {
-            manaSources.removeAll(ComputerUtilMana.getManaSourcesToPayCost(ComputerUtilMana.calculateManaCost(exceptForThisSa, true, 0), exceptForThisSa, player));
-        }
-
-        if (manaSources.isEmpty()) {
-            return false;
-        }
-
-        AiCardMemory.MemorySet memSet = null;
-        if (phaseType == null && forNextSpell) {
-            memSet = AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_NEXT_SPELL;
-        } else if (phaseType != null) {
-            switch (phaseType) {
-                case MAIN2:
-                    memSet = AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_MAIN2;
-                    break;
-                case COMBAT_DECLARE_BLOCKERS:
-                    memSet = enemy ? AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_ENEMY_DECLBLK
-                            : AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_DECLBLK;
-                    break;
-                default:
-                    System.out.println("Warning: unsupported mana reservation phase specified for reserveManaSources: "
-                            + phaseType.name() + ", reserving until Main 2 instead. Consider adding support for the phase if needed.");
-                    memSet = AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_MAIN2;
-                    break;
-            }
-        }
-
-        // This is a simplification, since one mana source can produce more than one mana,
-        // but should work in most circumstances to ensure safety in whatever the AI is using this for.
-        if (manaSources.size() >= cost.getConvertedManaCost()) {
-            for (Card c : manaSources) {
-                memory.rememberCard(c, memSet);
-            }
-            return true;
-        }
+//        ManaCostBeingPaid cost = ComputerUtilMana.calculateManaCost(sa, true, 0);
+//        CardCollection manaSources = ComputerUtilMana.getManaSourcesToPayCost(cost, sa, player);
+//
+//        // used for chained spells where two spells need to be cast in succession
+//        if (exceptForThisSa != null) {
+//            manaSources.removeAll(ComputerUtilMana.getManaSourcesToPayCost(ComputerUtilMana.calculateManaCost(exceptForThisSa, true, 0), exceptForThisSa, player));
+//        }
+//
+//        if (manaSources.isEmpty()) {
+//            return false;
+//        }
+//
+//        AiCardMemory.MemorySet memSet = null;
+//        if (phaseType == null && forNextSpell) {
+//            memSet = AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_NEXT_SPELL;
+//        } else if (phaseType != null) {
+//            switch (phaseType) {
+//                case MAIN2:
+//                    memSet = AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_MAIN2;
+//                    break;
+//                case COMBAT_DECLARE_BLOCKERS:
+//                    memSet = enemy ? AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_ENEMY_DECLBLK
+//                            : AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_DECLBLK;
+//                    break;
+//                default:
+//                    System.out.println("Warning: unsupported mana reservation phase specified for reserveManaSources: "
+//                            + phaseType.name() + ", reserving until Main 2 instead. Consider adding support for the phase if needed.");
+//                    memSet = AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_MAIN2;
+//                    break;
+//            }
+//        }
+//
+//        // This is a simplification, since one mana source can produce more than one mana,
+//        // but should work in most circumstances to ensure safety in whatever the AI is using this for.
+//        if (manaSources.size() >= cost.getConvertedManaCost()) {
+//            for (Card c : manaSources) {
+//                memory.rememberCard(c, memSet);
+//            }
+//            return true;
+//        }
 
         return false;
     }
 
     // This is for playing spells regularly (no Cascade/Ripple etc.)
-    private AiPlayDecision canPlayAndPayFor(final SpellAbility sa) {
-        if (!sa.canPlay()) {
-            return AiPlayDecision.CantPlaySa;
-        }
-
-        final Card host = sa.getHostCard();
-
-        // Check a predefined condition
-        if (sa.hasParam("AICheckSVar")) {
-            final String svarToCheck = sa.getParam("AICheckSVar");
-            String comparator = "GE";
-            int compareTo = 1;
-
-            if (sa.hasParam("AISVarCompare")) {
-                final String fullCmp = sa.getParam("AISVarCompare");
-                comparator = fullCmp.substring(0, 2);
-                final String strCmpTo = fullCmp.substring(2);
-                try {
-                    compareTo = Integer.parseInt(strCmpTo);
-                } catch (final Exception ignored) {
-                    compareTo = AbilityUtils.calculateAmount(host, host.getSVar(strCmpTo), sa);
-                }
-            }
-
-            int left = AbilityUtils.calculateAmount(host, svarToCheck, sa);
-            if (!Expressions.compare(left, comparator, compareTo)) {
-                return AiPlayDecision.AnotherTime;
-            }
-        }
-
-        int oldCMC = -1;
-        boolean xCost = sa.costHasX() || host.hasStartOfKeyword("Strive");
-        if (!xCost) {
-            if (!ComputerUtilCost.canPayCost(sa, player, sa.isTrigger())) {
-                // for most costs, it's OK to check if they can be paid early in order to avoid running a heavy API check
-                // when the AI won't even be able to play the spell in the first place (even if it could afford it)
-                return AiPlayDecision.CantAfford;
-            }
-            // TODO check for Reduce too, e.g. Battlefield Thaumaturge could make it castable
-            if (!sa.getAllTargetChoices().isEmpty()) {
-                oldCMC = CostAdjustment.adjust(sa.getPayCosts(), sa).getTotalMana().getCMC();
-            }
-        }
-
-        // state needs to be switched here so API checks evaluate the right face
-        CardStateName currentState = sa.getCardState() != null && host.getCurrentStateName() != sa.getCardStateName() && !host.isInPlay() ? host.getCurrentStateName() : null;
-        if (currentState != null) {
-            host.setState(sa.getCardStateName(), false);
-        }
-
-        AiPlayDecision canPlay = canPlaySa(sa); // this is the "heaviest" check, which also sets up targets, defines X, etc.
-
-        if (currentState != null) {
-            host.setState(currentState, false);
-        }
-
-        if (canPlay != AiPlayDecision.WillPlay) {
-            return canPlay;
-        }
-
-        // Account for possible Ward after the spell is fully targeted
-        // TODO: ideally, this should be done while targeting, so that a different target can be preferred if the best
-        // one is warded and can't be paid for. (currently it will be stuck with the target until it could pay)
-        if (sa.usesTargeting() && (!sa.isSpell() || CardFactoryUtil.isCounterable(host))) {
-            for (Card tgt : sa.getTargets().getTargetCards()) {
-                // TODO some older cards don't use the keyword, so check for trigger instead
-                if (tgt.hasKeyword(Keyword.WARD) && tgt.isInPlay() && tgt.getController().isOpponentOf(host.getController())) {
-                    int amount = 0;
-                    Cost wardCost = ComputerUtilCard.getTotalWardCost(tgt);
-                    if (wardCost.hasManaCost()) {
-                        amount = wardCost.getTotalMana().getCMC();
-                        if (amount > 0 && !ComputerUtilCost.canPayCost(sa, player, true)) {
-                            return AiPlayDecision.CantAfford;
-                        }
-                    }
-                    if (wardCost.hasSpecificCostType(CostPayLife.class)) {
-                        int lifeToPay = wardCost.getCostPartByType(CostPayLife.class).convertAmount();
-                        if (lifeToPay > player.getLife() || (lifeToPay == player.getLife() && !player.cantLoseForZeroOrLessLife())) {
-                            return AiPlayDecision.CantAfford;
-                        }
-                    }
-                    if (wardCost.hasSpecificCostType(CostDiscard.class)
-                            && wardCost.getCostPartByType(CostDiscard.class).convertAmount() > player.getCardsIn(ZoneType.Hand).size()) {
-                        return AiPlayDecision.CantAfford;
-                    }
-                }
-            }
-        }
-
-        // check if some target raised cost
-        if (oldCMC > -1) {
-            int finalCMC = CostAdjustment.adjust(sa.getPayCosts(), sa).getTotalMana().getCMC();
-            if (finalCMC > oldCMC) {
-                xCost = true;
-            }
-        }
-
-        if (xCost && !ComputerUtilCost.canPayCost(sa, player, sa.isTrigger())) {
-            // for dependent costs with X, e.g. Repeal, which require a valid target to be specified before a decision can be made
-            // on whether the cost can be paid, this can only be checked late after canPlaySa has been run (or the AI will misplay)
-            return AiPlayDecision.CantAfford;
-        }
-
-        // if we got here, looks like we can play the final cost and we could properly set up and target the API and
-        // are willing to play the SA
-        return AiPlayDecision.WillPlay;
-    }
+//    private AiPlayDecision canPlayAndPayFor(final SpellAbility sa) {
+//        if (!sa.canPlay()) {
+//            return AiPlayDecision.CantPlaySa;
+//        }
+//
+//        final Card host = sa.getHostCard();
+//
+//        // Check a predefined condition
+//        if (sa.hasParam("AICheckSVar")) {
+//            final String svarToCheck = sa.getParam("AICheckSVar");
+//            String comparator = "GE";
+//            int compareTo = 1;
+//
+//            if (sa.hasParam("AISVarCompare")) {
+//                final String fullCmp = sa.getParam("AISVarCompare");
+//                comparator = fullCmp.substring(0, 2);
+//                final String strCmpTo = fullCmp.substring(2);
+//                try {
+//                    compareTo = Integer.parseInt(strCmpTo);
+//                } catch (final Exception ignored) {
+//                    compareTo = AbilityUtils.calculateAmount(host, host.getSVar(strCmpTo), sa);
+//                }
+//            }
+//
+//            int left = AbilityUtils.calculateAmount(host, svarToCheck, sa);
+//            if (!Expressions.compare(left, comparator, compareTo)) {
+//                return AiPlayDecision.AnotherTime;
+//            }
+//        }
+//
+//        int oldCMC = -1;
+//        boolean xCost = sa.costHasX() || host.hasStartOfKeyword("Strive");
+//        if (!xCost) {
+//            if (!ComputerUtilCost.canPayCost(sa, player, sa.isTrigger())) {
+//                // for most costs, it's OK to check if they can be paid early in order to avoid running a heavy API check
+//                // when the AI won't even be able to play the spell in the first place (even if it could afford it)
+//                return AiPlayDecision.CantAfford;
+//            }
+//            // TODO check for Reduce too, e.g. Battlefield Thaumaturge could make it castable
+//            if (!sa.getAllTargetChoices().isEmpty()) {
+//                oldCMC = CostAdjustment.adjust(sa.getPayCosts(), sa).getTotalMana().getCMC();
+//            }
+//        }
+//
+//        // state needs to be switched here so API checks evaluate the right face
+//        CardStateName currentState = sa.getCardState() != null && host.getCurrentStateName() != sa.getCardStateName() && !host.isInPlay() ? host.getCurrentStateName() : null;
+//        if (currentState != null) {
+//            host.setState(sa.getCardStateName(), false);
+//        }
+//
+//        AiPlayDecision canPlay = canPlaySa(sa); // this is the "heaviest" check, which also sets up targets, defines X, etc.
+//
+//        if (currentState != null) {
+//            host.setState(currentState, false);
+//        }
+//
+//        if (canPlay != AiPlayDecision.WillPlay) {
+//            return canPlay;
+//        }
+//
+//        // Account for possible Ward after the spell is fully targeted
+//        // TODO: ideally, this should be done while targeting, so that a different target can be preferred if the best
+//        // one is warded and can't be paid for. (currently it will be stuck with the target until it could pay)
+//        if (sa.usesTargeting() && (!sa.isSpell() || CardFactoryUtil.isCounterable(host))) {
+//            for (Card tgt : sa.getTargets().getTargetCards()) {
+//                // TODO some older cards don't use the keyword, so check for trigger instead
+//                if (tgt.hasKeyword(Keyword.WARD) && tgt.isInPlay() && tgt.getController().isOpponentOf(host.getController())) {
+//                    int amount = 0;
+//                    Cost wardCost = ComputerUtilCard.getTotalWardCost(tgt);
+//                    if (wardCost.hasManaCost()) {
+//                        amount = wardCost.getTotalMana().getCMC();
+//                        if (amount > 0 && !ComputerUtilCost.canPayCost(sa, player, true)) {
+//                            return AiPlayDecision.CantAfford;
+//                        }
+//                    }
+//                    if (wardCost.hasSpecificCostType(CostPayLife.class)) {
+//                        int lifeToPay = wardCost.getCostPartByType(CostPayLife.class).convertAmount();
+//                        if (lifeToPay > player.getLife() || (lifeToPay == player.getLife() && !player.cantLoseForZeroOrLessLife())) {
+//                            return AiPlayDecision.CantAfford;
+//                        }
+//                    }
+//                    if (wardCost.hasSpecificCostType(CostDiscard.class)
+//                            && wardCost.getCostPartByType(CostDiscard.class).convertAmount() > player.getCardsIn(ZoneType.Hand).size()) {
+//                        return AiPlayDecision.CantAfford;
+//                    }
+//                }
+//            }
+//        }
+//
+//        // check if some target raised cost
+//        if (oldCMC > -1) {
+//            int finalCMC = CostAdjustment.adjust(sa.getPayCosts(), sa).getTotalMana().getCMC();
+//            if (finalCMC > oldCMC) {
+//                xCost = true;
+//            }
+//        }
+//
+//        if (xCost && !ComputerUtilCost.canPayCost(sa, player, sa.isTrigger())) {
+//            // for dependent costs with X, e.g. Repeal, which require a valid target to be specified before a decision can be made
+//            // on whether the cost can be paid, this can only be checked late after canPlaySa has been run (or the AI will misplay)
+//            return AiPlayDecision.CantAfford;
+//        }
+//
+//        // if we got here, looks like we can play the final cost and we could properly set up and target the API and
+//        // are willing to play the SA
+//        return AiPlayDecision.WillPlay;
+//    }
 
     public AiPlayDecision canPlaySa(SpellAbility sa) {
         if (!checkAiSpecificRestrictions(sa)) {
@@ -997,74 +1002,75 @@ public class AiController {
     private final static Comparator<SpellAbility> saComparator = new Comparator<SpellAbility>() {
         @Override
         public int compare(final SpellAbility a, final SpellAbility b) {
-            // sort from highest cost to lowest
-            // we want the highest costs first
-            int a1 = a.getPayCosts().getTotalMana().getCMC();
-            int b1 = b.getPayCosts().getTotalMana().getCMC();
-
-            // deprioritize SAs explicitly marked as preferred to be activated last compared to all other SAs
-            if (a.hasParam("AIActivateLast") && !b.hasParam("AIActivateLast")) {
-                return 1;
-            } else if (b.hasParam("AIActivateLast") && !a.hasParam("AIActivateLast")) {
-                return -1;
-            }
-
-            // deprioritize planar die roll marked with AIRollPlanarDieParams:LowPriority$ True
-            if (ApiType.RollPlanarDice == a.getApi() && a.getHostCard() != null && a.getHostCard().hasSVar("AIRollPlanarDieParams") && a.getHostCard().getSVar("AIRollPlanarDieParams").toLowerCase().matches(".*lowpriority\\$\\s*true.*")) {
-                return 1;
-            } else if (ApiType.RollPlanarDice == b.getApi() && b.getHostCard() != null && b.getHostCard().hasSVar("AIRollPlanarDieParams") && b.getHostCard().getSVar("AIRollPlanarDieParams").toLowerCase().matches(".*lowpriority\\$\\s*true.*")) {
-                return -1;
-            }
-
-            // deprioritize pump spells with pure energy cost (can be activated last,
-            // since energy is generally scarce, plus can benefit e.g. Electrostatic Pummeler)
-            int a2 = 0, b2 = 0;
-            if (a.getApi() == ApiType.Pump && a.getPayCosts().getCostEnergy() != null) {
-                if (a.getPayCosts().hasOnlySpecificCostType(CostPayEnergy.class)) {
-                    a2 = a.getPayCosts().getCostEnergy().convertAmount();
-                }
-            }
-            if (b.getApi() == ApiType.Pump && b.getPayCosts().getCostEnergy() != null) {
-                if (b.getPayCosts().hasOnlySpecificCostType(CostPayEnergy.class)) {
-                    b2 = b.getPayCosts().getCostEnergy().convertAmount();
-                }
-            }
-            if (a2 == 0 && b2 > 0) {
-                return -1;
-            } else if (b2 == 0 && a2 > 0) {
-                return 1;
-            }
-
-            // cast 0 mana cost spells first (might be a Mox)
-            if (a1 == 0 && b1 > 0 && ApiType.Mana != a.getApi()) {
-                return -1;
-            } else if (a1 > 0 && b1 == 0 && ApiType.Mana != b.getApi()) {
-                return 1;
-            }
-            
-            if (a.getHostCard() != null && a.getHostCard().hasSVar("FreeSpellAI")) {
-                return -1;
-            } else if (b.getHostCard() != null && b.getHostCard().hasSVar("FreeSpellAI")) {
-                return 1;
-            }
-
-            if (a.getHostCard().equals(b.getHostCard()) && a.getApi() == b.getApi()) {
-                // Cheaper Spectacle costs should be preferred
-                // FIXME: Any better way to identify that these are the same ability, one with Spectacle and one not?
-                // (looks like it's not a full-fledged alternative cost as such, and is not processed with other alt costs)
-                if (a.isSpectacle() && !b.isSpectacle() && a1 < b1) {
-                    return 1;
-                } else if (b.isSpectacle() && !a.isSpectacle() && b1 < a1) {
-                    return 1;
-                }
-            }
-
-            a1 += getSpellAbilityPriority(a);
-            b1 += getSpellAbilityPriority(b);
-
-            return b1 - a1;
+//            // sort from highest cost to lowest
+//            // we want the highest costs first
+//            int a1 = a.getPayCosts().getTotalMana().getCMC();
+//            int b1 = b.getPayCosts().getTotalMana().getCMC();
+//
+//            // deprioritize SAs explicitly marked as preferred to be activated last compared to all other SAs
+//            if (a.hasParam("AIActivateLast") && !b.hasParam("AIActivateLast")) {
+//                return 1;
+//            } else if (b.hasParam("AIActivateLast") && !a.hasParam("AIActivateLast")) {
+//                return -1;
+//            }
+//
+//            // deprioritize planar die roll marked with AIRollPlanarDieParams:LowPriority$ True
+//            if (ApiType.RollPlanarDice == a.getApi() && a.getHostCard() != null && a.getHostCard().hasSVar("AIRollPlanarDieParams") && a.getHostCard().getSVar("AIRollPlanarDieParams").toLowerCase().matches(".*lowpriority\\$\\s*true.*")) {
+//                return 1;
+//            } else if (ApiType.RollPlanarDice == b.getApi() && b.getHostCard() != null && b.getHostCard().hasSVar("AIRollPlanarDieParams") && b.getHostCard().getSVar("AIRollPlanarDieParams").toLowerCase().matches(".*lowpriority\\$\\s*true.*")) {
+//                return -1;
+//            }
+//
+//            // deprioritize pump spells with pure energy cost (can be activated last,
+//            // since energy is generally scarce, plus can benefit e.g. Electrostatic Pummeler)
+//            int a2 = 0, b2 = 0;
+//            if (a.getApi() == ApiType.Pump && a.getPayCosts().getCostEnergy() != null) {
+//                if (a.getPayCosts().hasOnlySpecificCostType(CostPayEnergy.class)) {
+//                    a2 = a.getPayCosts().getCostEnergy().convertAmount();
+//                }
+//            }
+//            if (b.getApi() == ApiType.Pump && b.getPayCosts().getCostEnergy() != null) {
+//                if (b.getPayCosts().hasOnlySpecificCostType(CostPayEnergy.class)) {
+//                    b2 = b.getPayCosts().getCostEnergy().convertAmount();
+//                }
+//            }
+//            if (a2 == 0 && b2 > 0) {
+//                return -1;
+//            } else if (b2 == 0 && a2 > 0) {
+//                return 1;
+//            }
+//
+//            // cast 0 mana cost spells first (might be a Mox)
+//            if (a1 == 0 && b1 > 0 && ApiType.Mana != a.getApi()) {
+//                return -1;
+//            } else if (a1 > 0 && b1 == 0 && ApiType.Mana != b.getApi()) {
+//                return 1;
+//            }
+//
+//            if (a.getHostCard() != null && a.getHostCard().hasSVar("FreeSpellAI")) {
+//                return -1;
+//            } else if (b.getHostCard() != null && b.getHostCard().hasSVar("FreeSpellAI")) {
+//                return 1;
+//            }
+//
+//            if (a.getHostCard().equals(b.getHostCard()) && a.getApi() == b.getApi()) {
+//                // Cheaper Spectacle costs should be preferred
+//                // FIXME: Any better way to identify that these are the same ability, one with Spectacle and one not?
+//                // (looks like it's not a full-fledged alternative cost as such, and is not processed with other alt costs)
+//                if (a.isSpectacle() && !b.isSpectacle() && a1 < b1) {
+//                    return 1;
+//                } else if (b.isSpectacle() && !a.isSpectacle() && b1 < a1) {
+//                    return 1;
+//                }
+//            }
+//
+//            a1 += getSpellAbilityPriority(a);
+//            b1 += getSpellAbilityPriority(b);
+//
+//            return b1 - a1;
+            return 0;
         }
-        
+
         private int getSpellAbilityPriority(SpellAbility sa) {
             int p = 0;
             Card source = sa.getHostCard();
@@ -1157,172 +1163,173 @@ public class AiController {
     }
 
     public CardCollection getCardsToDiscard(int min, final int max, final CardCollection validCards, final SpellAbility sa) {
-        if (validCards.size() < min) {
-            return null;
-        }
-
-        Card sourceCard = null;
-        final CardCollection discardList = new CardCollection();
-        int count = 0;
-        if (sa != null) {
-            String logic = sa.getParamOrDefault("AILogic", "");
-            sourceCard = sa.getHostCard();
-            if ("Always".equals(logic) && !validCards.isEmpty()) {
-                min = 1;
-            } else if (logic.startsWith("UnlessAtLife.")) {
-                int threshold = AbilityUtils.calculateAmount(sourceCard, logic.substring(logic.indexOf(".") + 1), sa);
-                if (player.getLife() <= threshold) {
-                    min = 1;
-                }
-            } else if ("VolrathsShapeshifter".equals(logic)) {
-                return SpecialCardAi.VolrathsShapeshifter.targetBestCreature(player, sa);
-            } else if ("DiscardCMCX".equals(logic)) {
-                final int cmc = sa.getXManaCostPaid();
-                CardCollection discards = CardLists.filter(player.getCardsIn(ZoneType.Hand), CardPredicates.hasCMC(cmc));
-                if (discards.isEmpty()) {
-                    return null;
-                }
-                return new CardCollection(ComputerUtilCard.getWorstAI(discards));
-            }
-
-            if (sa.hasParam("AnyNumber")) {
-                if ("DiscardUncastableAndExcess".equals(sa.getParam("AILogic"))) {
-                    CardCollection discards = new CardCollection();
-                    final CardCollectionView inHand = player.getCardsIn(ZoneType.Hand);
-                    final int numLandsOTB = CardLists.count(inHand, Presets.LANDS);
-                    int numOppInHand = 0;
-                    for (Player p : player.getGame().getPlayers()) {
-                        if (p.getCardsIn(ZoneType.Hand).size() > numOppInHand) {
-                            numOppInHand = p.getCardsIn(ZoneType.Hand).size();
-                        }
-                    }
-                    for (Card c : inHand) {
-                        if (c.hasSVar("DoNotDiscardIfAble") || c.hasSVar("IsReanimatorCard")) { continue; }
-                        if (c.isCreature() && !ComputerUtilMana.hasEnoughManaSourcesToCast(c.getSpellPermanent(), player)) {
-                            discards.add(c);
-                        }
-                        if ((c.isLand() && numLandsOTB >= 5) || (c.getFirstSpellAbility() != null && !ComputerUtilMana.hasEnoughManaSourcesToCast(c.getFirstSpellAbility(), player))) {
-                            if (discards.size() + 1 <= numOppInHand) {
-                                discards.add(c);
-                            }
-                        }
-                    }
-                    return discards;
-                }
-            }
-
-        }
-
-        // look for good discards
-        while (count < min) {
-            Card prefCard = null;
-            if (sa != null && sa.getActivatingPlayer() != null && sa.getActivatingPlayer().isOpponentOf(player)) {
-                for (Card c : validCards) {
-                    if (c.hasKeyword("If a spell or ability an opponent controls causes you to discard CARDNAME,"
-                            + " put it onto the battlefield instead of putting it into your graveyard.")
-                            || !c.getSVar("DiscardMeByOpp").isEmpty()) {
-                        prefCard = c;
-                        break;
-                    }
-                }
-            }
-            if (prefCard == null) {
-                prefCard = ComputerUtil.getCardPreference(player, sourceCard, "DiscardCost", validCards);
-                if (prefCard != null && prefCard.hasSVar("DoNotDiscardIfAble")) {
-                    prefCard = null;
-                }
-            }
-            if (prefCard != null) {
-                discardList.add(prefCard);
-                validCards.remove(prefCard);
-                count++;
-            }
-            else {
-                break;
-            }
-        }
-
-        final int discardsLeft = min - count;
-
-        // choose rest
-        for (int i = 0; i < discardsLeft; i++) {
-            if (validCards.isEmpty()) {
-                continue;
-            }
-            final int numLandsInPlay = CardLists.count(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS_PRODUCING_MANA);
-            final CardCollection landsInHand = CardLists.filter(validCards, Presets.LANDS);
-            final int numLandsInHand = landsInHand.size();
-    
-            // Discard a land
-            boolean canDiscardLands = numLandsInHand > 3  || (numLandsInHand > 2 && numLandsInPlay > 0)
-            || (numLandsInHand > 1 && numLandsInPlay > 2) || (numLandsInHand > 0 && numLandsInPlay > 5);
-    
-            if (canDiscardLands) {
-                discardList.add(landsInHand.get(0));
-                validCards.remove(landsInHand.get(0));
-            }
-            else { // Discard other stuff
-                CardLists.sortByCmcDesc(validCards);
-                int numLandsAvailable = numLandsInPlay;
-                if (numLandsInHand > 0) {
-                    numLandsAvailable++;
-                }
-
-                // Discard unplayable card (checks by CMC)
-                // But check if there is a card in play that allows casting spells for free!
-                // if yes, nothing is unplayable based on CMC alone
-                boolean discardedUnplayable = false;
-                boolean freeCastAllowed = ComputerUtilCost.isFreeCastAllowedByPermanent(player, null);
-
-                for (int j = 0; j < validCards.size(); j++) {
-                    if ((validCards.get(j).getCMC() > numLandsAvailable || freeCastAllowed) && !validCards.get(j).hasSVar("DoNotDiscardIfAble")) {
-                        discardList.add(validCards.get(j));
-                        validCards.remove(validCards.get(j));
-                        discardedUnplayable = true;
-                        break;
-                    } else if (validCards.get(j).getCMC() <= numLandsAvailable) {
-                        // cut short to avoid looping over cards which are guaranteed not to fit the criteria
-                        break;
-                    }
-                }
-
-                if (!discardedUnplayable) {
-                    // discard worst card
-                    Card worst = ComputerUtilCard.getWorstAI(validCards);
-                    if (worst == null) {
-                        // there were only instants and sorceries, and maybe cards that are not good to discard, so look
-                        // for more discard options
-                        worst = ComputerUtilCard.getCheapestSpellAI(validCards);
-                    }
-                    if (worst == null && !validCards.isEmpty()) {
-                        // still nothing chosen, so choose the first thing that works, trying not to make DoNotDiscardIfAble
-                        // discards
-                        for (Card c : validCards) {
-                            if (!c.hasSVar("DoNotDiscardIfAble")) {
-                                worst = c;
-                                break;
-                            }
-                        }
-                        // Only DoNotDiscardIfAble cards? If we have a duplicate for something, discard it
-                        if (worst == null) {
-                            for (Card c : validCards) {
-                                if (CardLists.count(player.getCardsIn(ZoneType.Hand), CardPredicates.nameEquals(c.getName())) > 1) {
-                                    worst = c;
-                                    break;
-                                }
-                            }
-                            if (worst == null) {
-                                // Otherwise just grab a random card and discard it
-                                worst = Aggregates.random(validCards);
-                            }
-                        }
-                    }
-                    discardList.add(worst);
-                    validCards.remove(worst);
-                }
-            }
-        }
-        return discardList;
+//        if (validCards.size() < min) {
+//            return null;
+//        }
+//
+//        Card sourceCard = null;
+//        final CardCollection discardList = new CardCollection();
+//        int count = 0;
+//        if (sa != null) {
+//            String logic = sa.getParamOrDefault("AILogic", "");
+//            sourceCard = sa.getHostCard();
+//            if ("Always".equals(logic) && !validCards.isEmpty()) {
+//                min = 1;
+//            } else if (logic.startsWith("UnlessAtLife.")) {
+//                int threshold = AbilityUtils.calculateAmount(sourceCard, logic.substring(logic.indexOf(".") + 1), sa);
+//                if (player.getLife() <= threshold) {
+//                    min = 1;
+//                }
+//            } else if ("VolrathsShapeshifter".equals(logic)) {
+//                return SpecialCardAi.VolrathsShapeshifter.targetBestCreature(player, sa);
+//            } else if ("DiscardCMCX".equals(logic)) {
+//                final int cmc = sa.getXManaCostPaid();
+//                CardCollection discards = CardLists.filter(player.getCardsIn(ZoneType.Hand), CardPredicates.hasCMC(cmc));
+//                if (discards.isEmpty()) {
+//                    return null;
+//                }
+//                return new CardCollection(ComputerUtilCard.getWorstAI(discards));
+//            }
+//
+//            if (sa.hasParam("AnyNumber")) {
+//                if ("DiscardUncastableAndExcess".equals(sa.getParam("AILogic"))) {
+//                    CardCollection discards = new CardCollection();
+//                    final CardCollectionView inHand = player.getCardsIn(ZoneType.Hand);
+//                    final int numLandsOTB = CardLists.count(inHand, Presets.LANDS);
+//                    int numOppInHand = 0;
+//                    for (Player p : player.getGame().getPlayers()) {
+//                        if (p.getCardsIn(ZoneType.Hand).size() > numOppInHand) {
+//                            numOppInHand = p.getCardsIn(ZoneType.Hand).size();
+//                        }
+//                    }
+//                    for (Card c : inHand) {
+//                        if (c.hasSVar("DoNotDiscardIfAble") || c.hasSVar("IsReanimatorCard")) { continue; }
+//                        if (c.isCreature() && !ComputerUtilMana.hasEnoughManaSourcesToCast(c.getSpellPermanent(), player)) {
+//                            discards.add(c);
+//                        }
+//                        if ((c.isLand() && numLandsOTB >= 5) || (c.getFirstSpellAbility() != null && !ComputerUtilMana.hasEnoughManaSourcesToCast(c.getFirstSpellAbility(), player))) {
+//                            if (discards.size() + 1 <= numOppInHand) {
+//                                discards.add(c);
+//                            }
+//                        }
+//                    }
+//                    return discards;
+//                }
+//            }
+//
+//        }
+//
+//        // look for good discards
+//        while (count < min) {
+//            Card prefCard = null;
+//            if (sa != null && sa.getActivatingPlayer() != null && sa.getActivatingPlayer().isOpponentOf(player)) {
+//                for (Card c : validCards) {
+//                    if (c.hasKeyword("If a spell or ability an opponent controls causes you to discard CARDNAME,"
+//                            + " put it onto the battlefield instead of putting it into your graveyard.")
+//                            || !c.getSVar("DiscardMeByOpp").isEmpty()) {
+//                        prefCard = c;
+//                        break;
+//                    }
+//                }
+//            }
+//            if (prefCard == null) {
+//                prefCard = ComputerUtil.getCardPreference(player, sourceCard, "DiscardCost", validCards);
+//                if (prefCard != null && prefCard.hasSVar("DoNotDiscardIfAble")) {
+//                    prefCard = null;
+//                }
+//            }
+//            if (prefCard != null) {
+//                discardList.add(prefCard);
+//                validCards.remove(prefCard);
+//                count++;
+//            }
+//            else {
+//                break;
+//            }
+//        }
+//
+//        final int discardsLeft = min - count;
+//
+//        // choose rest
+//        for (int i = 0; i < discardsLeft; i++) {
+//            if (validCards.isEmpty()) {
+//                continue;
+//            }
+//            final int numLandsInPlay = CardLists.count(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS_PRODUCING_MANA);
+//            final CardCollection landsInHand = CardLists.filter(validCards, Presets.LANDS);
+//            final int numLandsInHand = landsInHand.size();
+//
+//            // Discard a land
+//            boolean canDiscardLands = numLandsInHand > 3  || (numLandsInHand > 2 && numLandsInPlay > 0)
+//            || (numLandsInHand > 1 && numLandsInPlay > 2) || (numLandsInHand > 0 && numLandsInPlay > 5);
+//
+//            if (canDiscardLands) {
+//                discardList.add(landsInHand.get(0));
+//                validCards.remove(landsInHand.get(0));
+//            }
+//            else { // Discard other stuff
+//                CardLists.sortByCmcDesc(validCards);
+//                int numLandsAvailable = numLandsInPlay;
+//                if (numLandsInHand > 0) {
+//                    numLandsAvailable++;
+//                }
+//
+//                // Discard unplayable card (checks by CMC)
+//                // But check if there is a card in play that allows casting spells for free!
+//                // if yes, nothing is unplayable based on CMC alone
+//                boolean discardedUnplayable = false;
+//                boolean freeCastAllowed = ComputerUtilCost.isFreeCastAllowedByPermanent(player, null);
+//
+//                for (int j = 0; j < validCards.size(); j++) {
+//                    if ((validCards.get(j).getCMC() > numLandsAvailable || freeCastAllowed) && !validCards.get(j).hasSVar("DoNotDiscardIfAble")) {
+//                        discardList.add(validCards.get(j));
+//                        validCards.remove(validCards.get(j));
+//                        discardedUnplayable = true;
+//                        break;
+//                    } else if (validCards.get(j).getCMC() <= numLandsAvailable) {
+//                        // cut short to avoid looping over cards which are guaranteed not to fit the criteria
+//                        break;
+//                    }
+//                }
+//
+//                if (!discardedUnplayable) {
+//                    // discard worst card
+//                    Card worst = ComputerUtilCard.getWorstAI(validCards);
+//                    if (worst == null) {
+//                        // there were only instants and sorceries, and maybe cards that are not good to discard, so look
+//                        // for more discard options
+//                        worst = ComputerUtilCard.getCheapestSpellAI(validCards);
+//                    }
+//                    if (worst == null && !validCards.isEmpty()) {
+//                        // still nothing chosen, so choose the first thing that works, trying not to make DoNotDiscardIfAble
+//                        // discards
+//                        for (Card c : validCards) {
+//                            if (!c.hasSVar("DoNotDiscardIfAble")) {
+//                                worst = c;
+//                                break;
+//                            }
+//                        }
+//                        // Only DoNotDiscardIfAble cards? If we have a duplicate for something, discard it
+//                        if (worst == null) {
+//                            for (Card c : validCards) {
+//                                if (CardLists.count(player.getCardsIn(ZoneType.Hand), CardPredicates.nameEquals(c.getName())) > 1) {
+//                                    worst = c;
+//                                    break;
+//                                }
+//                            }
+//                            if (worst == null) {
+//                                // Otherwise just grab a random card and discard it
+//                                worst = Aggregates.random(validCards);
+//                            }
+//                        }
+//                    }
+//                    discardList.add(worst);
+//                    validCards.remove(worst);
+//                }
+//            }
+//        }
+//        return discardList;
+        return null;
     }
 
     public boolean confirmAction(SpellAbility sa, PlayerActionConfirmMode mode, String message, Map<String, Object> params) {
@@ -1350,7 +1357,7 @@ public class AiController {
                 return false;
             default:
                 return false;
-        } 
+        }
         return false;
     }
 
@@ -1426,29 +1433,29 @@ public class AiController {
     }
 
     public void declareAttackers(Player attacker, Combat combat) {
-        // 12/2/10(sol) the decision making here has moved to getAttackers()
-        AiAttackController aiAtk = new AiAttackController(attacker); 
-        lastAttackAggression = aiAtk.declareAttackers(combat);
-
-        // if invalid: just try an attack declaration that we know to be legal
-        if (!CombatUtil.validateAttackers(combat)) {
-            combat.clearAttackers();
-            final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();
-            System.err.println("AI Attack declaration invalid, defaulting to: " + legal);
-            for (final Map.Entry<Card, GameEntity> mandatoryAttacker : legal.entrySet()) {
-                combat.addAttacker(mandatoryAttacker.getKey(), mandatoryAttacker.getValue());
-            }
-            if (!CombatUtil.validateAttackers(combat)) {
-                aiAtk.declareAttackers(combat);
-            }
-        }
-
-        for (final Card element : combat.getAttackers()) {
-            // tapping of attackers happens after Propaganda is paid for
-            final StringBuilder sb = new StringBuilder();
-            sb.append("Computer just assigned ").append(element.getName()).append(" as an attacker.");
-            Log.debug(sb.toString());
-        }
+//        // 12/2/10(sol) the decision making here has moved to getAttackers()
+//        AiAttackController aiAtk = new AiAttackController(attacker);
+//        lastAttackAggression = aiAtk.declareAttackers(combat);
+//
+//        // if invalid: just try an attack declaration that we know to be legal
+//        if (!CombatUtil.validateAttackers(combat)) {
+//            combat.clearAttackers();
+//            final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();
+//            System.err.println("AI Attack declaration invalid, defaulting to: " + legal);
+//            for (final Map.Entry<Card, GameEntity> mandatoryAttacker : legal.entrySet()) {
+//                combat.addAttacker(mandatoryAttacker.getKey(), mandatoryAttacker.getValue());
+//            }
+//            if (!CombatUtil.validateAttackers(combat)) {
+//                aiAtk.declareAttackers(combat);
+//            }
+//        }
+//
+//        for (final Card element : combat.getAttackers()) {
+//            // tapping of attackers happens after Propaganda is paid for
+//            final StringBuilder sb = new StringBuilder();
+//            sb.append("Computer just assigned ").append(element.getName()).append(" as an attacker.");
+//            Log.debug(sb.toString());
+//        }
     }
 
     private List<SpellAbility> singleSpellAbilityList(SpellAbility sa) {
@@ -1460,71 +1467,72 @@ public class AiController {
     }
 
     public List<SpellAbility> chooseSpellAbilityToPlay() {
-        // Reset cached predicted combat, as it may be stale. It will be
-        // re-created if needed and used for any AI logic that needs it.
-        predictedCombat = null;
-        // Also reset predicted combat for next turn here
-        predictedCombatNextTurn = null;
-
-        // Reset priority mana reservation that's meant to work for one spell only
-        memory.clearMemorySet(AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_NEXT_SPELL);
-
-        if (useSimulation) {
-            return singleSpellAbilityList(simPicker.chooseSpellAbilityToPlay(null));
-        }
-
-        CardCollection playBeforeLand = CardLists.filter(
-            player.getCardsIn(ZoneType.Hand), CardPredicates.hasSVar("PlayBeforeLandDrop")
-        );
-        if (!playBeforeLand.isEmpty()) {
-            SpellAbility wantToPlayBeforeLand = chooseSpellAbilityToPlayFromList(
-                ComputerUtilAbility.getSpellAbilities(playBeforeLand, player), false
-            );
-            if (wantToPlayBeforeLand != null) {
-                return singleSpellAbilityList(wantToPlayBeforeLand);
-            }
-        }
-        
-        CardCollection landsWannaPlay = ComputerUtilAbility.getAvailableLandsToPlay(game, player);
-        if (landsWannaPlay != null) {
-            landsWannaPlay = filterLandsToPlay(landsWannaPlay);
-            Log.debug("Computer " + game.getPhaseHandler().getPhase().nameForUi);
-            if (landsWannaPlay != null && !landsWannaPlay.isEmpty()) {
-                // TODO search for other land it might want to play?
-                Card land = chooseBestLandToPlay(landsWannaPlay);
-                if ((!player.canLoseLife() || player.cantLoseForZeroOrLessLife() || ComputerUtil.getDamageFromETB(player, land) < player.getLife())
-                        && (!game.getPhaseHandler().is(PhaseType.MAIN1) || !isSafeToHoldLandDropForMain2(land))) {
-                    final List<SpellAbility> abilities = Lists.newArrayList();
-
-                    // TODO extend this logic to evaluate MDFC with both sides land
-                    // this can only happen if its a MDFC land
-                    if (!land.isLand()) {
-                        land.setState(CardStateName.Modal, true);
-                        land.setBackSide(true);
-                    }
-
-                    LandAbility la = new LandAbility(land, player, null);
-                    la.setCardState(land.getCurrentState());
-                    if (la.canPlay()) {
-                        abilities.add(la);
-                    }
-
-                    // add mayPlay option
-                    for (CardPlayOption o : land.mayPlay(player)) {
-                        la = new LandAbility(land, player, o.getAbility());
-                        la.setCardState(land.getCurrentState());
-                        if (la.canPlay()) {
-                            abilities.add(la);
-                        }
-                    }
-                    if (!abilities.isEmpty()) {
-                        return abilities;
-                    }
-                }
-            }
-        }
-
-        return singleSpellAbilityList(getSpellAbilityToPlay());
+//        // Reset cached predicted combat, as it may be stale. It will be
+//        // re-created if needed and used for any AI logic that needs it.
+//        predictedCombat = null;
+//        // Also reset predicted combat for next turn here
+//        predictedCombatNextTurn = null;
+//
+//        // Reset priority mana reservation that's meant to work for one spell only
+//        memory.clearMemorySet(AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_NEXT_SPELL);
+//
+//        if (useSimulation) {
+//            return singleSpellAbilityList(simPicker.chooseSpellAbilityToPlay(null));
+//        }
+//
+//        CardCollection playBeforeLand = CardLists.filter(
+//            player.getCardsIn(ZoneType.Hand), CardPredicates.hasSVar("PlayBeforeLandDrop")
+//        );
+//        if (!playBeforeLand.isEmpty()) {
+//            SpellAbility wantToPlayBeforeLand = chooseSpellAbilityToPlayFromList(
+//                ComputerUtilAbility.getSpellAbilities(playBeforeLand, player), false
+//            );
+//            if (wantToPlayBeforeLand != null) {
+//                return singleSpellAbilityList(wantToPlayBeforeLand);
+//            }
+//        }
+//
+//        CardCollection landsWannaPlay = ComputerUtilAbility.getAvailableLandsToPlay(game, player);
+//        if (landsWannaPlay != null) {
+//            landsWannaPlay = filterLandsToPlay(landsWannaPlay);
+//            Log.debug("Computer " + game.getPhaseHandler().getPhase().nameForUi);
+//            if (landsWannaPlay != null && !landsWannaPlay.isEmpty()) {
+//                // TODO search for other land it might want to play?
+//                Card land = chooseBestLandToPlay(landsWannaPlay);
+//                if ((!player.canLoseLife() || player.cantLoseForZeroOrLessLife() || ComputerUtil.getDamageFromETB(player, land) < player.getLife())
+//                        && (!game.getPhaseHandler().is(PhaseType.MAIN1) || !isSafeToHoldLandDropForMain2(land))) {
+//                    final List<SpellAbility> abilities = Lists.newArrayList();
+//
+//                    // TODO extend this logic to evaluate MDFC with both sides land
+//                    // this can only happen if its a MDFC land
+//                    if (!land.isLand()) {
+//                        land.setState(CardStateName.Modal, true);
+//                        land.setBackSide(true);
+//                    }
+//
+//                    LandAbility la = new LandAbility(land, player, null);
+//                    la.setCardState(land.getCurrentState());
+//                    if (la.canPlay()) {
+//                        abilities.add(la);
+//                    }
+//
+//                    // add mayPlay option
+//                    for (CardPlayOption o : land.mayPlay(player)) {
+//                        la = new LandAbility(land, player, o.getAbility());
+//                        la.setCardState(land.getCurrentState());
+//                        if (la.canPlay()) {
+//                            abilities.add(la);
+//                        }
+//                    }
+//                    if (!abilities.isEmpty()) {
+//                        return abilities;
+//                    }
+//                }
+//            }
+//        }
+//
+//        return singleSpellAbilityList(getSpellAbilityToPlay());
+        return null;
     }
 
     private boolean isSafeToHoldLandDropForMain2(Card landToPlay) {
@@ -1647,56 +1655,57 @@ public class AiController {
     }
 
     private final SpellAbility getSpellAbilityToPlay() {
-        CardCollection cards = ComputerUtilAbility.getAvailableCards(game, player);
-        cards = ComputerUtilCard.dedupeCards(cards);
-        List<SpellAbility> saList = Lists.newArrayList();
-
-        SpellAbility top = null;
-        if (!game.getStack().isEmpty()) {
-            top = game.getStack().peekAbility();
-        }
-        final boolean topOwnedByAI = top != null && top.getActivatingPlayer().equals(player);
-        final boolean mustRespond = top != null && top.hasParam("AIRespondsToOwnAbility");
-
-        if (topOwnedByAI) {
-            // AI's own spell: should probably let my stuff resolve first, but may want to copy the SA or respond to it
-            // in a scripted timed fashion.
-
-            if (!mustRespond) {
-                saList = ComputerUtilAbility.getSpellAbilities(cards, player); // get the SA list early to check for copy SAs
-                if (ComputerUtilAbility.getFirstCopySASpell(saList) == null) {
-                    // Nothing to copy the spell with, so do nothing.
-                    return null;
-                }
-            }
-        }
-
-        if (!game.getStack().isEmpty()) {
-            SpellAbility counter = chooseCounterSpell(getPlayableCounters(cards));
-            if (counter != null) return counter;
-    
-            SpellAbility counterETB = chooseSpellAbilityToPlayFromList(getPossibleETBCounters(), false);
-            if (counterETB != null)
-                return counterETB;
-        }
-
-        if (saList.isEmpty()) {
-            saList = ComputerUtilAbility.getSpellAbilities(cards, player);
-        }
-
-        Iterables.removeIf(saList, new Predicate<SpellAbility>() {
-            @Override
-            public boolean apply(final SpellAbility spellAbility) { //don't include removedAI cards if somehow the AI can play the ability or gain control of unsupported card
-                // TODO allow when experimental profile?
-                return spellAbility instanceof LandAbility || (spellAbility.getHostCard() != null && ComputerUtilCard.isCardRemAIDeck(spellAbility.getHostCard()));
-            }
-        });
-
-        SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);
-
-        if (topOwnedByAI && !mustRespond && chosenSa != ComputerUtilAbility.getFirstCopySASpell(saList)) {
-            return null; // not planning to copy the spell and not marked as something the AI would respond to
-        }
+//        CardCollection cards = ComputerUtilAbility.getAvailableCards(game, player);
+//        cards = ComputerUtilCard.dedupeCards(cards);
+//        List<SpellAbility> saList = Lists.newArrayList();
+//
+//        SpellAbility top = null;
+//        if (!game.getStack().isEmpty()) {
+//            top = game.getStack().peekAbility();
+//        }
+//        final boolean topOwnedByAI = top != null && top.getActivatingPlayer().equals(player);
+//        final boolean mustRespond = top != null && top.hasParam("AIRespondsToOwnAbility");
+//
+//        if (topOwnedByAI) {
+//            // AI's own spell: should probably let my stuff resolve first, but may want to copy the SA or respond to it
+//            // in a scripted timed fashion.
+//
+//            if (!mustRespond) {
+//                saList = ComputerUtilAbility.getSpellAbilities(cards, player); // get the SA list early to check for copy SAs
+//                if (ComputerUtilAbility.getFirstCopySASpell(saList) == null) {
+//                    // Nothing to copy the spell with, so do nothing.
+//                    return null;
+//                }
+//            }
+//        }
+//
+//        if (!game.getStack().isEmpty()) {
+//            SpellAbility counter = chooseCounterSpell(getPlayableCounters(cards));
+//            if (counter != null) return counter;
+//
+//            SpellAbility counterETB = chooseSpellAbilityToPlayFromList(getPossibleETBCounters(), false);
+//            if (counterETB != null)
+//                return counterETB;
+//        }
+//
+//        if (saList.isEmpty()) {
+//            saList = ComputerUtilAbility.getSpellAbilities(cards, player);
+//        }
+//
+//        Iterables.removeIf(saList, new Predicate<SpellAbility>() {
+//            @Override
+//            public boolean apply(final SpellAbility spellAbility) { //don't include removedAI cards if somehow the AI can play the ability or gain control of unsupported card
+//                // TODO allow when experimental profile?
+////                return spellAbility instanceof LandAbility || (spellAbility.getHostCard() != null && ComputerUtilCard.isCardRemAIDeck(spellAbility.getHostCard()));
+//                return false;
+//            }
+//        });
+//
+//        SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);
+//
+////        if (topOwnedByAI && !mustRespond && chosenSa != ComputerUtilAbility.getFirstCopySASpell(saList)) {
+////            return null; // not planning to copy the spell and not marked as something the AI would respond to
+////        }
 
         return chosenSa;
     }
@@ -1757,7 +1766,7 @@ public class AiController {
     public CardCollection chooseCardsToDelve(int genericCost, CardCollection grave) {
         CardCollection toExile = new CardCollection();
         int numToExile = Math.min(grave.size(), genericCost);
-        
+
         for (int i = 0; i < numToExile; i++) {
             Card chosen = null;
             for (final Card c : grave) { // Exile noncreatures first in
@@ -2078,12 +2087,12 @@ public class AiController {
 
     // this is where the computer cheats
     // changes AllZone.getComputerPlayer().getZone(Zone.Library)
-    
+
     /**
      * <p>
      * smoothComputerManaCurve.
      * </p>
-     * 
+     *
      * @param in
      *            an array of {@link Card} objects.
      * @return an array of {@link Card} objects.
@@ -2113,7 +2122,7 @@ public class AiController {
             library.add(8, land.get(2));
             library.add(9, land.get(3));
             library.add(10, land.get(4));
-    
+
             library.add(12, land.get(5));
             library.add(15, land.get(6));
         } catch (final IndexOutOfBoundsException e) {

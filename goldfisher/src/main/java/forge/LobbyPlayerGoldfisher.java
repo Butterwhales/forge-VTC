@@ -57,7 +57,7 @@ public class LobbyPlayerGoldfisher extends LobbyPlayer implements IGameEntitiesF
         ai.setFirstController(createControllerFor(ai));
 
         if (rotateProfileEachGame) {
-            setAiProfile(AiProfileUtil.getRandomProfile());
+//            setAiProfile(AiProfileUtil.getRandomProfile());
             /*System.out.println(String.format("AI profile %s was chosen for the lobby player %s.", getAiProfile(), getName()));*/
         }
         return ai;

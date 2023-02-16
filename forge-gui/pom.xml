@@ -78,6 +78,12 @@
             <version>1.6.54-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>forge</groupId>
+            <artifactId>goldfisher</artifactId>
+            <version>1.6.54-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

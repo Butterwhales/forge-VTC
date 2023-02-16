@@ -111,7 +111,8 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public Map<Card, Integer> assignCombatDamage(Card attacker, CardCollectionView blockers, CardCollectionView remaining, int damageDealt, GameEntity defender, boolean overrideOrder) {
-        return ComputerUtilCombat.distributeAIDamage(attacker, blockers, remaining, damageDealt, defender, overrideOrder);
+//        return ComputerUtilCombat.distributeAIDamage(attacker, blockers, remaining, damageDealt, defender, overrideOrder);
+        return null;
     }
 
     @Override
@@ -122,124 +123,132 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public Map<Byte, Integer> specifyManaCombo(SpellAbility sa, ColorSet colorSet, int manaAmount, boolean different) {
-        Map<Byte, Integer> result = new HashMap<>();
-        for (int i = 0; i < manaAmount; ++i) {
-            Byte chosen = chooseColor("", sa, colorSet);
-            if (result.containsKey(chosen)) {
-                result.put(chosen, result.get(chosen) + 1);
-            } else {
-                result.put(chosen, 1);
-            }
-            if (different) {
-                colorSet = ColorSet.fromMask(colorSet.getColor() - chosen);
-            }
-        }
-        return result;
+//        Map<Byte, Integer> result = new HashMap<>();
+//        for (int i = 0; i < manaAmount; ++i) {
+//            Byte chosen = chooseColor("", sa, colorSet);
+//            if (result.containsKey(chosen)) {
+//                result.put(chosen, result.get(chosen) + 1);
+//            } else {
+//                result.put(chosen, 1);
+//            }
+//            if (different) {
+//                colorSet = ColorSet.fromMask(colorSet.getColor() - chosen);
+//            }
+//        }
+//        return result;
+        return null;
     }
 
     @Override
     public Integer announceRequirements(SpellAbility ability, String announce) {
         // For now, these "announcements" are made within the AI classes of the appropriate SA effects
-        if (ability.getApi() != null) {
-            switch (ability.getApi()) {
-                case ChooseNumber:
-                    Player payingPlayer = ability.getActivatingPlayer();
-                    String logic = ability.getParamOrDefault("AILogic", "");
-                    boolean anyController = logic.equals("MaxForAnyController");
-
-                    if (logic.startsWith("PowerLeakMaxMana.") && ability.getHostCard().isEnchantingCard()) {
-                        // For cards like Power Leak, the payer will be the owner of the enchanted card
-                        // TODO: is there any way to generalize this and avoid a special exclusion?
-                        payingPlayer = ability.getHostCard().getEnchantingCard().getController();
-                    }
-
-                    int number = ComputerUtilMana.determineLeftoverMana(ability, player, false);
-
-                    if (logic.startsWith("MaxMana.") || logic.startsWith("PowerLeakMaxMana.")) {
-                        number = Math.min(number, Integer.parseInt(logic.substring(logic.indexOf(".") + 1)));
-                    }
-
-                    return payingPlayer.isOpponentOf(player) && !anyController ? 0 : number;
-                case BidLife:
-                    return 0;
-                default:
-                    return null;
-            }
-        }
+//        if (ability.getApi() != null) {
+//            switch (ability.getApi()) {
+//                case ChooseNumber:
+//                    Player payingPlayer = ability.getActivatingPlayer();
+//                    String logic = ability.getParamOrDefault("AILogic", "");
+//                    boolean anyController = logic.equals("MaxForAnyController");
+//
+//                    if (logic.startsWith("PowerLeakMaxMana.") && ability.getHostCard().isEnchantingCard()) {
+//                        // For cards like Power Leak, the payer will be the owner of the enchanted card
+//                        // TODO: is there any way to generalize this and avoid a special exclusion?
+//                        payingPlayer = ability.getHostCard().getEnchantingCard().getController();
+//                    }
+//
+//                    int number = ComputerUtilMana.determineLeftoverMana(ability, player, false);
+//
+//                    if (logic.startsWith("MaxMana.") || logic.startsWith("PowerLeakMaxMana.")) {
+//                        number = Math.min(number, Integer.parseInt(logic.substring(logic.indexOf(".") + 1)));
+//                    }
+//
+//                    return payingPlayer.isOpponentOf(player) && !anyController ? 0 : number;
+//                case BidLife:
+//                    return 0;
+//                default:
+//                    return null;
+//            }
+//        }
         return null; // return incorrect value to indicate that
     }
 
     @Override
     public CardCollectionView choosePermanentsToSacrifice(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {
-        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, false, min == 0);
+//        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, false, min == 0);
+        return null;
     }
 
     @Override
     public CardCollectionView choosePermanentsToDestroy(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {
-        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, true, min == 0);
+//        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, true, min == 0);
+        return null;
     }
 
     @Override
     public CardCollectionView chooseCardsForEffect(CardCollectionView sourceList, SpellAbility sa, String title, int min, int max, boolean isOptional, Map<String, Object> params) {
-        return brains.chooseCardsForEffect(sourceList, sa, min, max, isOptional, params);
+//        return brains.chooseCardsForEffect(sourceList, sa, min, max, isOptional, params);
+        return null;
     }
 
     @Override
     public <T extends GameEntity> T chooseSingleEntityForEffect(FCollectionView<T> optionList, DelayedReveal delayedReveal, SpellAbility sa, String title, boolean isOptional, Player targetedPlayer, Map<String, Object> params) {
-        if (delayedReveal != null) {
-            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
-        }
-        ApiType api = sa.getApi();
-        if (null == api) {
-            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
-        }
-        return SpellApiToAi.Converter.get(api).chooseSingleEntity(player, sa, (FCollection<T>)optionList, isOptional, targetedPlayer, params);
+//        if (delayedReveal != null) {
+//            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
+//        }
+//        ApiType api = sa.getApi();
+//        if (null == api) {
+//            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
+//        }
+//        return SpellApiToAi.Converter.get(api).chooseSingleEntity(player, sa, (FCollection<T>)optionList, isOptional, targetedPlayer, params);
+        return null;
     }
 
     @Override
     public <T extends GameEntity> List<T> chooseEntitiesForEffect(
             FCollectionView<T> optionList, int min, int max, DelayedReveal delayedReveal, SpellAbility sa, String title,
             Player targetedPlayer, Map<String, Object> params) {
-        if (delayedReveal != null) {
-            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
-        }
-        FCollection<T> remaining = new FCollection<>(optionList);
-        List<T> selecteds = new ArrayList<>();
-        T selected;
-        do {
-            selected = chooseSingleEntityForEffect(remaining, null, sa, title, selecteds.size()>=min, targetedPlayer, params);
-            if ( selected != null ) {
-                remaining.remove(selected);
-                selecteds.add(selected);
-            }
-        } while ( (selected != null ) && (selecteds.size() < max) );
-        return selecteds;
+//        if (delayedReveal != null) {
+//            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
+//        }
+//        FCollection<T> remaining = new FCollection<>(optionList);
+//        List<T> selecteds = new ArrayList<>();
+//        T selected;
+//        do {
+//            selected = chooseSingleEntityForEffect(remaining, null, sa, title, selecteds.size()>=min, targetedPlayer, params);
+//            if ( selected != null ) {
+//                remaining.remove(selected);
+//                selecteds.add(selected);
+//            }
+//        } while ( (selected != null ) && (selecteds.size() < max) );
+//        return selecteds;
+        return null;
     }
 
     @Override
     public List<SpellAbility> chooseSpellAbilitiesForEffect(List<SpellAbility> spells, SpellAbility sa, String title,
             int num, Map<String, Object> params) {
-        List<SpellAbility> remaining = Lists.newArrayList(spells);
-        List<SpellAbility> selecteds = Lists.newArrayList();
-        SpellAbility selected;
-        do {
-            selected = chooseSingleSpellForEffect(remaining, sa, title, params);
-            if (selected != null) {
-                remaining.remove(selected);
-                selecteds.add(selected);
-            }
-        } while (selected != null && selecteds.size() < num);
-        return selecteds;
+//        List<SpellAbility> remaining = Lists.newArrayList(spells);
+//        List<SpellAbility> selecteds = Lists.newArrayList();
+//        SpellAbility selected;
+//        do {
+//            selected = chooseSingleSpellForEffect(remaining, sa, title, params);
+//            if (selected != null) {
+//                remaining.remove(selected);
+//                selecteds.add(selected);
+//            }
+//        } while (selected != null && selecteds.size() < num);
+//        return selecteds;
+        return null;
     }
 
     @Override
     public SpellAbility chooseSingleSpellForEffect(List<SpellAbility> spells, SpellAbility sa, String title,
             Map<String, Object> params) {
-        ApiType api = sa.getApi();
-        if (null == api) {
-            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
-        }
-        return SpellApiToAi.Converter.get(api).chooseSingleSpellAbility(player, sa, spells, params);
+//        ApiType api = sa.getApi();
+//        if (null == api) {
+//            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
+//        }
+//        return SpellApiToAi.Converter.get(api).chooseSingleSpellAbility(player, sa, spells, params);
+        return null;
     }
 
     @Override
@@ -262,43 +271,44 @@ public class PlayerControllerAi extends PlayerController {
     public boolean confirmTrigger(WrappedAbility wrapper) {
         final SpellAbility sa = wrapper.getWrappedAbility();
         //final Trigger regtrig = wrapper.getTrigger();
-        if (ComputerUtilAbility.getAbilitySourceName(sa).equals("Deathmist Raptor")) {
-            return true;
-        }
-        if (wrapper.isMandatory()) {
-            return true;
-        }
-        // Store/replace target choices more properly to get this SA cleared.
-        TargetChoices tc = null;
-        TargetChoices subtc = null;
-        boolean storeChoices = sa.usesTargeting();
-        final SpellAbility sub = sa.getSubAbility();
-        boolean storeSubChoices = sub != null && sub.usesTargeting();
-        boolean ret = true;
-
-        if (storeChoices) {
-            tc = sa.getTargets();
-            sa.resetTargets();
-        }
-        if (storeSubChoices) {
-            subtc = sub.getTargets();
-            sub.resetTargets();
-        }
-        // There is no way this doTrigger here will have the same target as stored above
-        // So it's possible it's making a different decision here than will actually happen
-        if (!brains.doTrigger(sa, false)) {
-            ret = false;
-        }
-        if (storeChoices) {
-            sa.resetTargets();
-            sa.setTargets(tc);
-        }
-        if (storeSubChoices) {
-            sub.resetTargets();
-            sub.setTargets(subtc);
-        }
-
-        return ret;
+//        if (ComputerUtilAbility.getAbilitySourceName(sa).equals("Deathmist Raptor")) {
+//            return true;
+//        }
+//        if (wrapper.isMandatory()) {
+//            return true;
+//        }
+//        // Store/replace target choices more properly to get this SA cleared.
+//        TargetChoices tc = null;
+//        TargetChoices subtc = null;
+//        boolean storeChoices = sa.usesTargeting();
+//        final SpellAbility sub = sa.getSubAbility();
+//        boolean storeSubChoices = sub != null && sub.usesTargeting();
+//        boolean ret = true;
+//
+//        if (storeChoices) {
+//            tc = sa.getTargets();
+//            sa.resetTargets();
+//        }
+//        if (storeSubChoices) {
+//            subtc = sub.getTargets();
+//            sub.resetTargets();
+//        }
+//        // There is no way this doTrigger here will have the same target as stored above
+//        // So it's possible it's making a different decision here than will actually happen
+//        if (!brains.doTrigger(sa, false)) {
+//            ret = false;
+//        }
+//        if (storeChoices) {
+//            sa.resetTargets();
+//            sa.setTargets(tc);
+//        }
+//        if (storeSubChoices) {
+//            sub.resetTargets();
+//            sub.setTargets(subtc);
+//        }
+//
+//        return ret;
+        return false;
     }
 
     @Override
@@ -308,22 +318,26 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public CardCollection orderBlockers(Card attacker, CardCollection blockers) {
-        return AiBlockController.orderBlockers(attacker, blockers);
+//        return AiBlockController.orderBlockers(attacker, blockers);
+        return null;
     }
 
     @Override
     public List<Card> exertAttackers(List<Card> attackers) {
-        return AiAttackController.exertAttackers(attackers, brains.getAttackAggression());
+//        return AiAttackController.exertAttackers(attackers, brains.getAttackAggression());
+        return null;
     }
 
     @Override
     public CardCollection orderBlocker(Card attacker, Card blocker, CardCollection oldBlockers) {
-    	return AiBlockController.orderBlocker(attacker, blocker, oldBlockers);
+//    	return AiBlockController.orderBlocker(attacker, blocker, oldBlockers);
+        return null;
     }
 
     @Override
     public CardCollection orderAttackers(Card blocker, CardCollection attackers) {
-        return AiBlockController.orderAttackers(blocker, attackers);
+//        return AiBlockController.orderAttackers(blocker, attackers);
+        return null;
     }
 
     @Override
@@ -338,20 +352,21 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public ImmutablePair<CardCollection, CardCollection> arrangeForScry(CardCollection topN) {
-        CardCollection toBottom = new CardCollection();
-        CardCollection toTop = new CardCollection();
-
-        for (Card c: topN) {
-            if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c)) {
-                toBottom.add(c);
-            } else {
-                toTop.add(c);
-            }
-        }
-
-        // put the rest on top in random order
-        CardLists.shuffle(toTop);
-        return ImmutablePair.of(toTop, toBottom);
+//        CardCollection toBottom = new CardCollection();
+//        CardCollection toTop = new CardCollection();
+//
+//        for (Card c: topN) {
+//            if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c)) {
+//                toBottom.add(c);
+//            } else {
+//                toTop.add(c);
+//            }
+//        }
+//
+//        // put the rest on top in random order
+//        CardLists.shuffle(toTop);
+//        return ImmutablePair.of(toTop, toBottom);
+        return null;
     }
 
     /* (non-Javadoc)
@@ -359,25 +374,26 @@ public class PlayerControllerAi extends PlayerController {
      */
     @Override
     public ImmutablePair<CardCollection, CardCollection> arrangeForSurveil(CardCollection topN) {
-        CardCollection toGraveyard = new CardCollection();
-        CardCollection toTop = new CardCollection();
-
-        // TODO: Currently this logic uses the same routine as Scry. Possibly differentiate this and implement
-        // a specific logic for Surveil (e.g. maybe to interact better with Reanimator strategies etc.).
-        if (getPlayer().getCardsIn(ZoneType.Library).size() <= getAi().getIntProperty(AiProps.SURVEIL_NUM_CARDS_IN_LIBRARY_TO_BAIL)) {
-            toTop.addAll(topN);
-        } else {
-            for (Card c : topN) {
-                if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c)) {
-                    toGraveyard.add(c);
-                } else {
-                    toTop.add(c);
-                }
-            }
-        }
-
-        CardLists.shuffle(toTop);
-        return ImmutablePair.of(toTop, toGraveyard);
+//        CardCollection toGraveyard = new CardCollection();
+//        CardCollection toTop = new CardCollection();
+//
+//        // TODO: Currently this logic uses the same routine as Scry. Possibly differentiate this and implement
+//        // a specific logic for Surveil (e.g. maybe to interact better with Reanimator strategies etc.).
+//        if (getPlayer().getCardsIn(ZoneType.Library).size() <= getAi().getIntProperty(AiProps.SURVEIL_NUM_CARDS_IN_LIBRARY_TO_BAIL)) {
+//            toTop.addAll(topN);
+//        } else {
+//            for (Card c : topN) {
+//                if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c)) {
+//                    toGraveyard.add(c);
+//                } else {
+//                    toTop.add(c);
+//                }
+//            }
+//        }
+//
+//        CardLists.shuffle(toTop);
+//        return ImmutablePair.of(toTop, toGraveyard);
+        return null;
     }
 
     @Override
@@ -385,162 +401,168 @@ public class PlayerControllerAi extends PlayerController {
         // This is used for Clash. Currently uses Scry logic to determine whether the card should be put on top.
         // Note that the AI does not know what will happen next (another clash or that would become his topdeck)
 
-        return !ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c);
+//        return !ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c);
+        return false;
     }
 
     @Override
     public CardCollectionView orderMoveToZoneList(CardCollectionView cards, ZoneType destinationZone, SpellAbility source) {
         //TODO Add more logic for AI ordering here
 
-        if (cards.isEmpty()) {
-            return cards;
-        }
-
-        if (destinationZone == ZoneType.Graveyard) {
-            // In presence of Volrath's Shapeshifter in deck, try to place the best creature on top of the graveyard
-            if (Iterables.any(getGame().getCardsInGame(), new Predicate<Card>() {
-                @Override
-                public boolean apply(Card card) {
-                    // need a custom predicate here since Volrath's Shapeshifter may have a different name OTB
-                    return card.getOriginalState(CardStateName.Original).getName().equals("Volrath's Shapeshifter");
-                }
-            })) {
-                int bestValue = 0;
-                Card bestCreature = null;
-                for (Card c : cards) {
-                    int curValue = ComputerUtilCard.evaluateCreature(c);
-                    if (c.isCreature() && curValue > bestValue) {
-                        bestValue = curValue;
-                        bestCreature = c;
-                    }
-                }
-
-                if (bestCreature != null) {
-                    CardCollection reordered = new CardCollection();
-                    for (Card c : cards) {
-                        if (!c.equals(bestCreature)) {
-                            reordered.add(c);
-                        }
-                    }
-                    reordered.add(bestCreature);
-                    return reordered;
-                }
-            }
-        } else if (destinationZone == ZoneType.Library) {
-            // Ponder and similar cards
-            Player p = cards.getFirst().getController(); // whose library are we reordering?
-            CardCollection reordered = new CardCollection();
-
-            // Try to use the Scry logic to figure out what should be closer to the top and what should be closer to the bottom
-            CardCollection topLands = new CardCollection(), topNonLands = new CardCollection(), bottom = new CardCollection();
-            for (Card c : cards) {
-                if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(p, c)) {
-                    bottom.add(c);
-                } else {
-                    if (c.isLand()) {
-                        topLands.add(c);
-                    } else {
-                        topNonLands.add(c);
-                    }
-                }
-            }
-
-            int landsOTB = CardLists.count(p.getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS_PRODUCING_MANA);
-
-            if (!p.isOpponentOf(player)) {
-                if (landsOTB <= 2) {
-                    // too few lands, add all the lands from the "top" category first
-                    reordered.addAll(topLands);
-                    topLands.clear();
-                } else {
-                    // we would have scried a land to top, so add one land from the "top" category if it's available there, but not more
-                    if (!topLands.isEmpty()) {
-                        Card first = topLands.getFirst();
-                        reordered.add(first);
-                        topLands.remove(first);
-                    }
-                }
-                // add everything that was deemed playable
-                reordered.addAll(topNonLands);
-                // then all the land extras that may be there
-                reordered.addAll(topLands);
-                // and then everything else that was deemed unplayable and thus scriable to the bottom
-                reordered.addAll(bottom);
-            } else {
-                // try to screw the opponent up as much as possible by placing the uncastables first
-                reordered.addAll(bottom);
-                if (landsOTB <= 5) {
-                    reordered.addAll(topNonLands);
-                    reordered.addAll(topLands);
-                } else {
-                    reordered.addAll(topLands);
-                    reordered.addAll(topNonLands);
-                }
-            }
-
-            assert(reordered.size() == cards.size());
-
-            return reordered;
-        }
-
-        // Default: return with the same order as was passed into this method
-        return cards;
+//        if (cards.isEmpty()) {
+//            return cards;
+//        }
+//
+//        if (destinationZone == ZoneType.Graveyard) {
+//            // In presence of Volrath's Shapeshifter in deck, try to place the best creature on top of the graveyard
+//            if (Iterables.any(getGame().getCardsInGame(), new Predicate<Card>() {
+//                @Override
+//                public boolean apply(Card card) {
+//                    // need a custom predicate here since Volrath's Shapeshifter may have a different name OTB
+//                    return card.getOriginalState(CardStateName.Original).getName().equals("Volrath's Shapeshifter");
+//                }
+//            })) {
+//                int bestValue = 0;
+//                Card bestCreature = null;
+//                for (Card c : cards) {
+//                    int curValue = ComputerUtilCard.evaluateCreature(c);
+//                    if (c.isCreature() && curValue > bestValue) {
+//                        bestValue = curValue;
+//                        bestCreature = c;
+//                    }
+//                }
+//
+//                if (bestCreature != null) {
+//                    CardCollection reordered = new CardCollection();
+//                    for (Card c : cards) {
+//                        if (!c.equals(bestCreature)) {
+//                            reordered.add(c);
+//                        }
+//                    }
+//                    reordered.add(bestCreature);
+//                    return reordered;
+//                }
+//            }
+//        } else if (destinationZone == ZoneType.Library) {
+//            // Ponder and similar cards
+//            Player p = cards.getFirst().getController(); // whose library are we reordering?
+//            CardCollection reordered = new CardCollection();
+//
+//            // Try to use the Scry logic to figure out what should be closer to the top and what should be closer to the bottom
+//            CardCollection topLands = new CardCollection(), topNonLands = new CardCollection(), bottom = new CardCollection();
+//            for (Card c : cards) {
+//                if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(p, c)) {
+//                    bottom.add(c);
+//                } else {
+//                    if (c.isLand()) {
+//                        topLands.add(c);
+//                    } else {
+//                        topNonLands.add(c);
+//                    }
+//                }
+//            }
+//
+//            int landsOTB = CardLists.count(p.getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS_PRODUCING_MANA);
+//
+//            if (!p.isOpponentOf(player)) {
+//                if (landsOTB <= 2) {
+//                    // too few lands, add all the lands from the "top" category first
+//                    reordered.addAll(topLands);
+//                    topLands.clear();
+//                } else {
+//                    // we would have scried a land to top, so add one land from the "top" category if it's available there, but not more
+//                    if (!topLands.isEmpty()) {
+//                        Card first = topLands.getFirst();
+//                        reordered.add(first);
+//                        topLands.remove(first);
+//                    }
+//                }
+//                // add everything that was deemed playable
+//                reordered.addAll(topNonLands);
+//                // then all the land extras that may be there
+//                reordered.addAll(topLands);
+//                // and then everything else that was deemed unplayable and thus scriable to the bottom
+//                reordered.addAll(bottom);
+//            } else {
+//                // try to screw the opponent up as much as possible by placing the uncastables first
+//                reordered.addAll(bottom);
+//                if (landsOTB <= 5) {
+//                    reordered.addAll(topNonLands);
+//                    reordered.addAll(topLands);
+//                } else {
+//                    reordered.addAll(topLands);
+//                    reordered.addAll(topNonLands);
+//                }
+//            }
+//
+//            assert(reordered.size() == cards.size());
+//
+//            return reordered;
+//        }
+//
+//        // Default: return with the same order as was passed into this method
+//        return cards;
+        return null;
     }
 
     @Override
     public CardCollection chooseCardsToDiscardFrom(Player p, SpellAbility sa, CardCollection validCards, int min, int max) {
-        if (p == player) {
-            return brains.getCardsToDiscard(min, max, validCards, sa);
-        }
-
-        boolean isTargetFriendly = !p.isOpponentOf(player);
-
-        return isTargetFriendly
-               ? ComputerUtil.getCardsToDiscardFromFriend(player, p, sa, validCards, min, max)
-               : ComputerUtil.getCardsToDiscardFromOpponent(player, p, sa, validCards, min, max);
+//        if (p == player) {
+//            return brains.getCardsToDiscard(min, max, validCards, sa);
+//        }
+//
+//        boolean isTargetFriendly = !p.isOpponentOf(player);
+//
+//        return isTargetFriendly
+//               ? ComputerUtil.getCardsToDiscardFromFriend(player, p, sa, validCards, min, max)
+//               : ComputerUtil.getCardsToDiscardFromOpponent(player, p, sa, validCards, min, max);
+        return null;
     }
 
     @Override
     public void playSpellAbilityForFree(SpellAbility copySA, boolean mayChooseNewTargets) {
         // Ai is known to set targets in doTrigger, so if it cannot choose new targets, we won't call canPlays
-        if (mayChooseNewTargets) {
-            if (copySA instanceof Spell) {
-                Spell spell = (Spell) copySA;
-                ((PlayerControllerAi) player.getController()).getAi().canPlayFromEffectAI(spell, true, true);
-            } else {
-                getAi().canPlaySa(copySA);
-            }
-        }
-        ComputerUtil.playSpellAbilityForFree(player, copySA);
+//        if (mayChooseNewTargets) {
+//            if (copySA instanceof Spell) {
+//                Spell spell = (Spell) copySA;
+//                ((PlayerControllerAi) player.getController()).getAi().canPlayFromEffectAI(spell, true, true);
+//            } else {
+//                getAi().canPlaySa(copySA);
+//            }
+//        }
+//        ComputerUtil.playSpellAbilityForFree(player, copySA);
+
     }
 
     @Override
     public void playSpellAbilityNoStack(SpellAbility effectSA, boolean canSetupTargets) {
-        if (canSetupTargets)
-            brains.doTrigger(effectSA, true); // first parameter does not matter, since return value won't be used
-        ComputerUtil.playNoStack(player, effectSA, getGame(), true);
+//        if (canSetupTargets)
+//            brains.doTrigger(effectSA, true); // first parameter does not matter, since return value won't be used
+//        ComputerUtil.playNoStack(player, effectSA, getGame(), true);
     }
 
     @Override
     public CardCollectionView chooseCardsToDelve(int genericAmount, CardCollection grave) {
-        return getAi().chooseCardsToDelve(genericAmount, grave);
+//        return getAi().chooseCardsToDelve(genericAmount, grave);
+        return null;
     }
 
     @Override
     public CardCollectionView chooseCardsToDiscardUnlessType(int num, CardCollectionView hand, String uType, SpellAbility sa) {
-        String [] splitUTypes = uType.split(",");
-        CardCollection cardsOfType = new CardCollection();
-        for (String part : splitUTypes) {
-            CardCollection partCards = CardLists.getType(hand, part);
-            if (!partCards.isEmpty()) {
-                cardsOfType.addAll(partCards);
-            }
-        }
-        if (!cardsOfType.isEmpty()) {
-            Card toDiscard = Aggregates.itemWithMin(cardsOfType, CardPredicates.Accessors.fnGetCmc);
-            return new CardCollection(toDiscard);
-        }
-        return getAi().getCardsToDiscard(num, null, sa);
+//        String [] splitUTypes = uType.split(",");
+//        CardCollection cardsOfType = new CardCollection();
+//        for (String part : splitUTypes) {
+//            CardCollection partCards = CardLists.getType(hand, part);
+//            if (!partCards.isEmpty()) {
+//                cardsOfType.addAll(partCards);
+//            }
+//        }
+//        if (!cardsOfType.isEmpty()) {
+//            Card toDiscard = Aggregates.itemWithMin(cardsOfType, CardPredicates.Accessors.fnGetCmc);
+//            return new CardCollection(toDiscard);
+//        }
+//        return getAi().getCardsToDiscard(num, null, sa);
+        return null;
     }
 
     @Override
@@ -550,17 +572,19 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public String chooseSomeType(String kindOfType, SpellAbility sa, Collection<String> validTypes, List<String> invalidTypes, boolean isOptional) {
-        String chosen = ComputerUtil.chooseSomeType(player, kindOfType, sa, validTypes, invalidTypes);
-        if (StringUtils.isBlank(chosen) && !validTypes.isEmpty()) {
-            chosen = validTypes.iterator().next();
-            System.err.println("AI has no idea how to choose " + kindOfType +", defaulting to arbitrary element: " + chosen);
-        }
-        return chosen;
+//        String chosen = ComputerUtil.chooseSomeType(player, kindOfType, sa, validTypes, invalidTypes);
+//        if (StringUtils.isBlank(chosen) && !validTypes.isEmpty()) {
+//            chosen = validTypes.iterator().next();
+//            System.err.println("AI has no idea how to choose " + kindOfType +", defaulting to arbitrary element: " + chosen);
+//        }
+//        return chosen;
+        return null;
     }
 
     @Override
     public Object vote(SpellAbility sa, String prompt, List<Object> options, ListMultimap<Object, Player> votes, Player forPlayer) {
-        return ComputerUtil.vote(player, options, sa, votes, forPlayer);
+//        return ComputerUtil.vote(player, options, sa, votes, forPlayer);
+        return null;
     }
 
     @Override
@@ -570,62 +594,65 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {
-        return !ComputerUtil.wantMulligan(player, cardsToReturn);
+//        return !ComputerUtil.wantMulligan(player, cardsToReturn);
+        return false;
     }
 
     @Override
     public CardCollectionView getCardsToMulligan(Player firstPlayer)  {
-        if (!ComputerUtil.wantMulligan(player, 0)) {
-            return null;
-        }
-
-        return player.getCardsIn(ZoneType.Hand);
+//        if (!ComputerUtil.wantMulligan(player, 0)) {
+//            return null;
+//        }
+//
+//        return player.getCardsIn(ZoneType.Hand);
+        return null;
     }
 
     @Override
     public CardCollectionView londonMulliganReturnCards(final Player mulliganingPlayer, int cardsToReturn) {
         // TODO This is better than it was before, but still suboptimal (but fast).
         // Maybe score a bunch of hands based on projected hand size and return the "duds"
-        CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
-        int numLandsDesired = (mulliganingPlayer.getStartingHandSize() - cardsToReturn) / 2;
-
-        CardCollection toReturn = new CardCollection();
-        for (int i = 0; i < cardsToReturn; i++) {
-            hand.removeAll(toReturn);
-
-            CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
-            int numLandsInHand = landsInHand.size() - CardLists.count(toReturn, Presets.LANDS);
-
-            // If we're flooding with lands, get rid of the worst land we have
-            if (numLandsInHand > 0 && numLandsInHand > numLandsDesired) {
-                CardCollection producingLands = CardLists.filter(landsInHand, Presets.LANDS_PRODUCING_MANA);
-                CardCollection nonProducingLands = CardLists.filter(landsInHand, Predicates.not(Presets.LANDS_PRODUCING_MANA));
-                Card worstLand = nonProducingLands.isEmpty() ? ComputerUtilCard.getWorstLand(producingLands)
-                        : ComputerUtilCard.getWorstLand(nonProducingLands);
-                toReturn.add(worstLand);
-                continue;
-            }
-
-            // See if we'd scry something to the bottom in this situation. If we want to, probably get rid of it.
-            CardCollection scryBottom = new CardCollection();
-            for (Card c : hand) {
-                // Lands are evaluated separately above, factoring in the number of cards to be returned to the library
-                if (!c.isLand() && !toReturn.contains(c) && !willPutCardOnTop(c)) {
-                    scryBottom.add(c);
-                }
-            }
-            if (!scryBottom.isEmpty()) {
-                CardLists.sortByCmcDesc(scryBottom);
-                toReturn.add(scryBottom.getFirst()); // assume the max CMC one is worse since we're not guaranteed to have lands for it
-                continue;
-            }
-
-            // If we don't want to scry anything to the bottom, remove the worst card that we have in order to satisfy
-            // the requirement
-            toReturn.add(ComputerUtilCard.getWorstAI(hand));
-        }
-
-        return CardCollection.getView(toReturn);
+//        CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
+//        int numLandsDesired = (mulliganingPlayer.getStartingHandSize() - cardsToReturn) / 2;
+//
+//        CardCollection toReturn = new CardCollection();
+//        for (int i = 0; i < cardsToReturn; i++) {
+//            hand.removeAll(toReturn);
+//
+//            CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
+//            int numLandsInHand = landsInHand.size() - CardLists.count(toReturn, Presets.LANDS);
+//
+//            // If we're flooding with lands, get rid of the worst land we have
+//            if (numLandsInHand > 0 && numLandsInHand > numLandsDesired) {
+//                CardCollection producingLands = CardLists.filter(landsInHand, Presets.LANDS_PRODUCING_MANA);
+//                CardCollection nonProducingLands = CardLists.filter(landsInHand, Predicates.not(Presets.LANDS_PRODUCING_MANA));
+//                Card worstLand = nonProducingLands.isEmpty() ? ComputerUtilCard.getWorstLand(producingLands)
+//                        : ComputerUtilCard.getWorstLand(nonProducingLands);
+//                toReturn.add(worstLand);
+//                continue;
+//            }
+//
+//            // See if we'd scry something to the bottom in this situation. If we want to, probably get rid of it.
+//            CardCollection scryBottom = new CardCollection();
+//            for (Card c : hand) {
+//                // Lands are evaluated separately above, factoring in the number of cards to be returned to the library
+//                if (!c.isLand() && !toReturn.contains(c) && !willPutCardOnTop(c)) {
+//                    scryBottom.add(c);
+//                }
+//            }
+//            if (!scryBottom.isEmpty()) {
+//                CardLists.sortByCmcDesc(scryBottom);
+//                toReturn.add(scryBottom.getFirst()); // assume the max CMC one is worse since we're not guaranteed to have lands for it
+//                continue;
+//            }
+//
+//            // If we don't want to scry anything to the bottom, remove the worst card that we have in order to satisfy
+//            // the requirement
+//            toReturn.add(ComputerUtilCard.getWorstAI(hand));
+//        }
+//
+//        return CardCollection.getView(toReturn);
+        return null;
     }
 
     @Override
@@ -645,15 +672,16 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public boolean playChosenSpellAbility(SpellAbility sa) {
-        if (sa instanceof LandAbility) {
-            if (sa.canPlay()) {
-                sa.resolve();
-                getGame().updateLastStateForCard(sa.getHostCard());
-            }
-        } else {
-            ComputerUtil.handlePlayingSpellAbility(player, sa, getGame());
-        }
-        return true;
+//        if (sa instanceof LandAbility) {
+//            if (sa.canPlay()) {
+//                sa.resolve();
+//                getGame().updateLastStateForCard(sa.getHostCard());
+//            }
+//        } else {
+//            ComputerUtil.handlePlayingSpellAbility(player, sa, getGame());
+//        }
+//        return true;
+        return false;
     }
 
     @Override
@@ -670,16 +698,16 @@ public class PlayerControllerAi extends PlayerController {
     @Override
     public boolean payManaOptional(Card c, Cost cost, SpellAbility sa, String prompt, ManaPaymentPurpose purpose) {
         // TODO replace with EmptySa
-        final Ability ability = new AbilityStatic(c, cost, null) { @Override public void resolve() {} };
-        ability.setActivatingPlayer(c.getController(), true);
-        ability.setCardState(sa.getCardState());
-
-        if (ComputerUtilCost.canPayCost(ability, c.getController(), true)) {
-            ComputerUtil.playNoStack(c.getController(), ability, getGame(), true);
-            // transfer this info for Balduvian Fallen
-            sa.setPayingMana(ability.getPayingMana());
-            return true;
-        }
+//        final Ability ability = new AbilityStatic(c, cost, null) { @Override public void resolve() {} };
+//        ability.setActivatingPlayer(c.getController(), true);
+//        ability.setCardState(sa.getCardState());
+//
+//        if (ComputerUtilCost.canPayCost(ability, c.getController(), true)) {
+//            ComputerUtil.playNoStack(c.getController(), ability, getGame(), true);
+//            // transfer this info for Balduvian Fallen
+//            sa.setPayingMana(ability.getPayingMana());
+//            return true;
+//        }
         return false;
     }
 
@@ -695,11 +723,12 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public int chooseNumber(SpellAbility sa, String string, int min, int max, Map<String, Object> params) {
-        ApiType api = sa.getApi();
-        if (null == api) {
-            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
-        }
-        return SpellApiToAi.Converter.get(api).chooseNumber(player, sa, min, max, params);
+//        ApiType api = sa.getApi();
+//        if (null == api) {
+//            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
+//        }
+//        return SpellApiToAi.Converter.get(api).chooseNumber(player, sa, min, max, params);
+        return 0;
     }
 
     @Override
@@ -744,52 +773,53 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public boolean chooseBinary(SpellAbility sa, String question, BinaryChoiceType kindOfChoice, Boolean defaultVal) {
-        switch (kindOfChoice) {
-            case TapOrUntap: return true;
-            case UntapOrLeaveTapped:
-                Card source = sa.getHostCard();
-                if (source != null && source.hasSVar("AIUntapPreference")) {
-                    switch (source.getSVar("AIUntapPreference")) {
-                        case "Always":
-                            return true;
-                        case "Never":
-                            return false;
-                        case "NothingRemembered":
-                            if (!source.hasRemembered()) {
-                                return true;
-                            } else {
-                                Card rem = (Card) source.getFirstRemembered();
-                                if (!rem.isInPlay()) {
-                                    return true;
-                                }
-                            }
-                            break;
-                        case "BetterTgtThanRemembered":
-                            if (source.hasRemembered()) {
-                                Card rem = (Card) source.getFirstRemembered();
-                                //  avoid pumping opponent creature
-                                if (!rem.isInPlay() || rem.getController().isOpponentOf(source.getController())) {
-                                    return true;
-                                }
-                                for (Card c : source.getController().getCreaturesInPlay()) {
-                                    if (c != rem && ComputerUtilCard.evaluateCreature(c) > ComputerUtilCard.evaluateCreature(rem) + 30) {
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                return defaultVal != null && defaultVal.booleanValue();
-            case UntapTimeVault: return false; // TODO Should AI skip his turn for time vault?
-            case LeftOrRight: return brains.chooseDirection(sa);
-            case OddsOrEvens: return brains.chooseEvenOdd(sa); // false is Odd, true is Even
-            default:
-                return MyRandom.getRandom().nextBoolean();
-        }
+//        switch (kindOfChoice) {
+//            case TapOrUntap: return true;
+//            case UntapOrLeaveTapped:
+//                Card source = sa.getHostCard();
+//                if (source != null && source.hasSVar("AIUntapPreference")) {
+//                    switch (source.getSVar("AIUntapPreference")) {
+//                        case "Always":
+//                            return true;
+//                        case "Never":
+//                            return false;
+//                        case "NothingRemembered":
+//                            if (!source.hasRemembered()) {
+//                                return true;
+//                            } else {
+//                                Card rem = (Card) source.getFirstRemembered();
+//                                if (!rem.isInPlay()) {
+//                                    return true;
+//                                }
+//                            }
+//                            break;
+//                        case "BetterTgtThanRemembered":
+//                            if (source.hasRemembered()) {
+//                                Card rem = (Card) source.getFirstRemembered();
+//                                //  avoid pumping opponent creature
+//                                if (!rem.isInPlay() || rem.getController().isOpponentOf(source.getController())) {
+//                                    return true;
+//                                }
+//                                for (Card c : source.getController().getCreaturesInPlay()) {
+//                                    if (c != rem && ComputerUtilCard.evaluateCreature(c) > ComputerUtilCard.evaluateCreature(rem) + 30) {
+//                                        return true;
+//                                    }
+//                                }
+//                                return false;
+//                            }
+//                            break;
+//                        default:
+//                            break;
+//                    }
+//                }
+//                return defaultVal != null && defaultVal.booleanValue();
+//            case UntapTimeVault: return false; // TODO Should AI skip his turn for time vault?
+//            case LeftOrRight: return brains.chooseDirection(sa);
+//            case OddsOrEvens: return brains.chooseEvenOdd(sa); // false is Odd, true is Even
+//            default:
+//                return MyRandom.getRandom().nextBoolean();
+//        }
+        return false;
     }
 
     /*
@@ -803,66 +833,71 @@ public class PlayerControllerAi extends PlayerController {
     @Override
     public boolean chooseBinary(SpellAbility sa, String question, BinaryChoiceType kindOfChoice,
             Map<String, Object> params) {
-        ApiType api = sa.getApi();
-        if (null == api) {
-            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
-        }
-        return SpellApiToAi.Converter.get(api).chooseBinary(kindOfChoice, sa, params);
+//        ApiType api = sa.getApi();
+//        if (null == api) {
+//            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
+//        }
+//        return SpellApiToAi.Converter.get(api).chooseBinary(kindOfChoice, sa, params);
+        return false;
     }
 
     @Override
     public Card chooseProtectionShield(GameEntity entityBeingDamaged, List<String> options, Map<String, Card> choiceMap) {
-        int i = MyRandom.getRandom().nextInt(options.size());
-        return choiceMap.get(options.get(i));
+//        int i = MyRandom.getRandom().nextInt(options.size());
+//        return choiceMap.get(options.get(i));
+        return null;
     }
 
     @Override
     public List<AbilitySub> chooseModeForAbility(SpellAbility sa, List<AbilitySub> possible, int min, int num, boolean allowRepeat) {
-        List<AbilitySub> result = brains.chooseModeForAbility(sa, possible, min, num, allowRepeat);
-        if (result != null) {
-            return result;
-        }
-        /**
-         * Called when CharmEffect resolves for the AI to select its choices.
-         * The list of chosen options (sa.getChosenList()) should be set by
-         * CharmAi.canPlayAi() for cast spells while CharmAi.doTrigger() deals
-         * with triggers. The logic in CharmAi should only be called once to
-         * account for probabilistic choices that may result in different
-         * results in subsequent calls.
-         */
-        if (sa.getChosenList() == null) {
-            getAi().doTrigger(sa, true);
-        }
-        return sa.getChosenList();
+//        List<AbilitySub> result = brains.chooseModeForAbility(sa, possible, min, num, allowRepeat);
+//        if (result != null) {
+//            return result;
+//        }
+//        /**
+//         * Called when CharmEffect resolves for the AI to select its choices.
+//         * The list of chosen options (sa.getChosenList()) should be set by
+//         * CharmAi.canPlayAi() for cast spells while CharmAi.doTrigger() deals
+//         * with triggers. The logic in CharmAi should only be called once to
+//         * account for probabilistic choices that may result in different
+//         * results in subsequent calls.
+//         */
+//        if (sa.getChosenList() == null) {
+//            getAi().doTrigger(sa, true);
+//        }
+//        return sa.getChosenList();
+        return null;
     }
 
     @Override
     public byte chooseColorAllowColorless(String message, Card card, ColorSet colors) {
-        final String c = ComputerUtilCard.getMostProminentColor(player.getCardsIn(ZoneType.Hand));
-        byte chosenColorMask = MagicColor.fromName(c);
-        if ((colors.getColor() & chosenColorMask) != 0) {
-            return chosenColorMask;
-        }
-        return Iterables.getFirst(colors, (byte)0);
+//        final String c = ComputerUtilCard.getMostProminentColor(player.getCardsIn(ZoneType.Hand));
+//        byte chosenColorMask = MagicColor.fromName(c);
+//        if ((colors.getColor() & chosenColorMask) != 0) {
+//            return chosenColorMask;
+//        }
+//        return Iterables.getFirst(colors, (byte)0);
+        return 0;
     }
 
     @Override
     public byte chooseColor(String message, SpellAbility sa, ColorSet colors) {
-        if (colors.countColors() < 2) {
-            return Iterables.getFirst(colors, MagicColor.WHITE);
-        }
-        // You may switch on sa.getApi() here and use sa.getParam("AILogic")
-        CardCollectionView hand = player.getCardsIn(ZoneType.Hand);
-        if (sa.getApi() == ApiType.Mana) {
-            hand = CardCollection.combine(hand, player.getCardsIn(ZoneType.Stack));
-        }
-        final String c = ComputerUtilCard.getMostProminentColor(hand);
-        byte chosenColorMask = MagicColor.fromName(c);
-
-        if ((colors.getColor() & chosenColorMask) != 0) {
-            return chosenColorMask;
-        }
-        return Iterables.getFirst(colors, MagicColor.WHITE);
+//        if (colors.countColors() < 2) {
+//            return Iterables.getFirst(colors, MagicColor.WHITE);
+//        }
+//        // You may switch on sa.getApi() here and use sa.getParam("AILogic")
+//        CardCollectionView hand = player.getCardsIn(ZoneType.Hand);
+//        if (sa.getApi() == ApiType.Mana) {
+//            hand = CardCollection.combine(hand, player.getCardsIn(ZoneType.Stack));
+//        }
+//        final String c = ComputerUtilCard.getMostProminentColor(hand);
+//        byte chosenColorMask = MagicColor.fromName(c);
+//
+//        if ((colors.getColor() & chosenColorMask) != 0) {
+//            return chosenColorMask;
+//        }
+//        return Iterables.getFirst(colors, MagicColor.WHITE);
+        return 0;
     }
 
     @Override
@@ -873,7 +908,8 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public List<String> chooseColors(String message, SpellAbility sa, int min, int max, List<String> options) {
-        return ComputerUtilCard.chooseColor(sa, min, max, options);
+//        return ComputerUtilCard.chooseColor(sa, min, max, options);
+        return null;
     }
 
     /*
@@ -885,15 +921,16 @@ public class PlayerControllerAi extends PlayerController {
     @Override
     public CounterType chooseCounterType(List<CounterType> options, SpellAbility sa, String prompt,
             Map<String, Object> params) {
-        // short cut if there is no options to choose
-        if (options.size() <= 1) {
-            return Iterables.getFirst(options, null);
-        }
-        ApiType api = sa.getApi();
-        if (null == api) {
-            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
-        }
-        return SpellApiToAi.Converter.get(api).chooseCounterType(options, sa, params);
+//        // short cut if there is no options to choose
+//        if (options.size() <= 1) {
+//            return Iterables.getFirst(options, null);
+//        }
+//        ApiType api = sa.getApi();
+//        if (null == api) {
+//            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
+//        }
+//        return SpellApiToAi.Converter.get(api).chooseCounterType(options, sa, params);
+                                         return null;
     }
 
     @Override
