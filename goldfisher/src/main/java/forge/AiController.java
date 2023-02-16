@@ -1732,42 +1732,42 @@ public class AiController {
             Sentry.captureMessage(ex.getMessage() + "\nAssertionError [verifyTransitivity]: " + assertex);
         }
 
-        for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(all, player)) {
-            // Don't add Counterspells to the "normal" playcard lookups
-            if (skipCounter && sa.getApi() == ApiType.Counter) {
-                continue;
-            }
-
-            if (sa.getHostCard().hasKeyword(Keyword.STORM)
-                    && sa.getApi() != ApiType.Counter // AI would suck at trying to deliberately proc a Storm counterspell
-                    && player.getZone(ZoneType.Hand).contains(Predicates.not(Predicates.or(Presets.LANDS, CardPredicates.hasKeyword("Storm"))))) {
-                if (game.getView().getStormCount() < this.getIntProperty(AiProps.MIN_COUNT_FOR_STORM_SPELLS)) {
-                    // skip evaluating Storm unless we reached the minimum Storm count
-                    continue;
-                }
-            }
-
-            sa.setActivatingPlayer(player, true);
-            SpellAbility root = sa.getRootAbility();
-
-            if (root.isSpell() || root.isTrigger() || root.isReplacementAbility()) {
-                sa.setLastStateBattlefield(game.getLastStateBattlefield());
-                sa.setLastStateGraveyard(game.getLastStateGraveyard());
-            }
-
-            AiPlayDecision opinion = canPlayAndPayFor(sa);
-
-            // reset LastStateBattlefield
-            sa.setLastStateBattlefield(CardCollection.EMPTY);
-            sa.setLastStateGraveyard(CardCollection.EMPTY);
-            // PhaseHandler ph = game.getPhaseHandler();
-            // System.out.printf("Ai thinks '%s' of %s -> %s @ %s %s >>> \n", opinion, sa.getHostCard(), sa, Lang.getPossesive(ph.getPlayerTurn().getName()), ph.getPhase());
-
-            if (opinion != AiPlayDecision.WillPlay)
-                continue;
-
-            return sa;
-        }
+//        for (final SpellAbility sa : ComputerUtilAbility.getOriginalAndAltCostAbilities(all, player)) {
+//            // Don't add Counterspells to the "normal" playcard lookups
+//            if (skipCounter && sa.getApi() == ApiType.Counter) {
+//                continue;
+//            }
+//
+//            if (sa.getHostCard().hasKeyword(Keyword.STORM)
+//                    && sa.getApi() != ApiType.Counter // AI would suck at trying to deliberately proc a Storm counterspell
+//                    && player.getZone(ZoneType.Hand).contains(Predicates.not(Predicates.or(Presets.LANDS, CardPredicates.hasKeyword("Storm"))))) {
+//                if (game.getView().getStormCount() < this.getIntProperty(AiProps.MIN_COUNT_FOR_STORM_SPELLS)) {
+//                    // skip evaluating Storm unless we reached the minimum Storm count
+//                    continue;
+//                }
+//            }
+//
+//            sa.setActivatingPlayer(player, true);
+//            SpellAbility root = sa.getRootAbility();
+//
+//            if (root.isSpell() || root.isTrigger() || root.isReplacementAbility()) {
+//                sa.setLastStateBattlefield(game.getLastStateBattlefield());
+//                sa.setLastStateGraveyard(game.getLastStateGraveyard());
+//            }
+//
+////            AiPlayDecision opinion = canPlayAndPayFor(sa);
+//
+//            // reset LastStateBattlefield
+//            sa.setLastStateBattlefield(CardCollection.EMPTY);
+//            sa.setLastStateGraveyard(CardCollection.EMPTY);
+//            // PhaseHandler ph = game.getPhaseHandler();
+//            // System.out.printf("Ai thinks '%s' of %s -> %s @ %s %s >>> \n", opinion, sa.getHostCard(), sa, Lang.getPossesive(ph.getPlayerTurn().getName()), ph.getPhase());
+//
+////            if (opinion != AiPlayDecision.WillPlay)
+////                continue;
+//
+//            return sa;
+//        }
 
         return null;
     }
@@ -1787,7 +1787,8 @@ public class AiController {
                 }
             }
             if (chosen == null) {
-                chosen = ComputerUtilCard.getWorstCreatureAI(grave);
+//                chosen = ComputerUtilCard.getWorstCreatureAI(grave);
+                return null;
             }
 
             if (chosen == null) {
@@ -1805,7 +1806,8 @@ public class AiController {
         if (spell instanceof WrappedAbility)
             return doTrigger(((WrappedAbility)spell).getWrappedAbility(), mandatory);
         if (spell.getApi() != null)
-            return SpellApiToAi.Converter.get(spell.getApi()).doTriggerAI(player, spell, mandatory);
+//            return SpellApiToAi.Converter.get(spell.getApi()).doTriggerAI(player, spell, mandatory);
+            return false;
         if (spell.getPayCosts() == Cost.Zero && !spell.usesTargeting()) {
             // For non-converted triggers (such as Cumulative Upkeep) that don't have costs or targets to worry about
             return true;
@@ -2032,18 +2034,18 @@ public class AiController {
                                     && card.canBeDestroyed();
                         }
                     });
-                    Card bestCreature = ComputerUtilCard.getBestCreatureAI(rightToughness.isEmpty() ? pool : rightToughness);
-                    if (bestCreature != null) {
-                        result.add(bestCreature);
-                        break;
-                    }
+//                    Card bestCreature = ComputerUtilCard.getBestCreatureAI(rightToughness.isEmpty() ? pool : rightToughness);
+//                    if (bestCreature != null) {
+//                        result.add(bestCreature);
+//                        break;
+//                    }
                 } else {
                     CardCollectionView viableOptions = CardLists.filter(pool, CardPredicates.isControlledByAnyOf(sa.getActivatingPlayer().getOpponents()), Presets.CAN_BE_DESTROYED);
-                    Card best = ComputerUtilCard.getBestAI(viableOptions);
-                    if (best != null) {
-                        result.add(best);
-                        break;
-                    }
+//                    Card best = ComputerUtilCard.getBestAI(viableOptions);
+//                    if (best != null) {
+//                        result.add(best);
+//                        break;
+//                    }
                 }
                 result.add(Aggregates.random(pool)); // should ideally never get here
                 break;
@@ -2078,9 +2080,9 @@ public class AiController {
         }
 
         // TODO: Hack for Phyrexian Dreadnought. Might need generalization (possibly its own AI logic)
-        if ("Phyrexian Dreadnought".equals(ComputerUtilAbility.getAbilitySourceName(sa))) {
-            result = SpecialCardAi.PhyrexianDreadnought.reviseCreatureSacList(player, sa, result);
-        }
+//        if ("Phyrexian Dreadnought".equals(ComputerUtilAbility.getAbilitySourceName(sa))) {
+//            result = SpecialCardAi.PhyrexianDreadnought.reviseCreatureSacList(player, sa, result);
+//        }
 
         return result;
     }
@@ -2161,7 +2163,8 @@ public class AiController {
             if (!left.isEmpty() || !right.isEmpty()) {
                 CardCollection all = new CardCollection(left);
                 all.addAll(right);
-                return left.contains(ComputerUtilCard.getBestCreatureAI(all));
+//                return left.contains(ComputerUtilCard.getBestCreatureAI(all));
+                return false;
             }
         }
         if ("Aminatou".equals(sa.getParam("AILogic")) && game.getPlayers().size() > 2) {
@@ -2301,7 +2304,8 @@ public class AiController {
         if (simPicker != null) {
             return simPicker.chooseSacrificeType(type, ability, effect, amount, exclude);
         }
-        return ComputerUtil.chooseSacrificeType(player, type, ability, ability.getTargetCard(), effect, amount, exclude);
+//        return ComputerUtil.chooseSacrificeType(player, type, ability, ability.getTargetCard(), effect, amount, exclude);
+        return null;
     }
 
     private boolean checkAiSpecificRestrictions(final SpellAbility sa) {
