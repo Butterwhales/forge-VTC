@@ -992,7 +992,8 @@ public class PlayerControllerAi extends PlayerController {
             }
         }
         if (!possible.isEmpty()) {
-            return Aggregates.random(possible);
+//            return Aggregates.random(possible);
+            return Aggregates.random(options); // if worst comes to worst, at least do something //TODO: delete this line
         } else {
             return Aggregates.random(options); // if worst comes to worst, at least do something
         }
@@ -1048,7 +1049,7 @@ public class PlayerControllerAi extends PlayerController {
                 }
             }
             if (threats != null && !threats.isEmpty()) {
-                ComputerUtilCard.sortByEvaluateCreature(threats);
+//                ComputerUtilCard.sortByEvaluateCreature(threats);
                 String s = ProtectAi.toProtectFrom(threats.get(0), sa);
                 if (s != null) {
                     return s;
@@ -1056,22 +1057,22 @@ public class PlayerControllerAi extends PlayerController {
             }
         }
         final PhaseHandler ph = getGame().getPhaseHandler();
-        if (ph.getPlayerTurn() == sa.getActivatingPlayer() && ph.getPhase() == PhaseType.MAIN1 && sa.getTargetCard() != null) {
-            AiAttackController aiAtk = new AiAttackController(sa.getActivatingPlayer(), sa.getTargetCard());
-            String s = aiAtk.toProtectAttacker(sa);
-            if (s != null) {
-                return s;
-            }
-        }
+//        if (ph.getPlayerTurn() == sa.getActivatingPlayer() && ph.getPhase() == PhaseType.MAIN1 && sa.getTargetCard() != null) {
+//            AiAttackController aiAtk = new AiAttackController(sa.getActivatingPlayer(), sa.getTargetCard());
+//            String s = aiAtk.toProtectAttacker(sa);
+//            if (s != null) {
+//                return s;
+//            }
+//        }
         final String logic = sa.getParam("AILogic");
         if (logic == null || logic.equals("MostProminentHumanCreatures")) {
             CardCollection list = player.getOpponents().getCreaturesInPlay();
             if (list.isEmpty()) {
                 list = CardLists.filterControlledBy(getGame().getCardsInGame(), player.getOpponents());
             }
-            if (!list.isEmpty()) {
-                choice = ComputerUtilCard.getMostProminentColor(list);
-            }
+//            if (!list.isEmpty()) {
+//                choice = ComputerUtilCard.getMostProminentColor(list);
+//            }
         }
         return choice;
     }
@@ -1086,10 +1087,10 @@ public class PlayerControllerAi extends PlayerController {
         emptyAbility.setSVars(sa.getSVars());
         emptyAbility.setCardState(sa.getCardState());
         emptyAbility.setXManaCostPaid(sa.getRootAbility().getXManaCostPaid());
-        if (ComputerUtilCost.willPayUnlessCost(sa, player, cost, alreadyPaid, allPayers) && ComputerUtilCost.canPayCost(emptyAbility, player, true)) {
-            ComputerUtil.playNoStack(player, emptyAbility, getGame(), true); // AI needs something to resolve to pay that cost
-            return true;
-        }
+//        if (ComputerUtilCost.willPayUnlessCost(sa, player, cost, alreadyPaid, allPayers) && ComputerUtilCost.canPayCost(emptyAbility, player, true)) {
+//            ComputerUtil.playNoStack(player, emptyAbility, getGame(), true); // AI needs something to resolve to pay that cost
+//            return true;
+//        }
         return false;
     }
 
@@ -1097,9 +1098,10 @@ public class PlayerControllerAi extends PlayerController {
     public void orderAndPlaySimultaneousSa(List<SpellAbility> activePlayerSAs) {
         for (final SpellAbility sa : getAi().orderPlaySa(activePlayerSAs)) {
             if (sa.isTrigger()) {
-                if (prepareSingleSa(sa.getHostCard(), sa, true)) {
-                    ComputerUtil.playStack(sa, player, getGame());
-                }
+//                if (prepareSingleSa(sa.getHostCard(), sa, true)) {
+//                    ComputerUtil.playStack(sa, player, getGame());
+//                }
+                return;
             } else {
                 if (sa.isCopied()) {
                     if (sa.isSpell()) {
@@ -1141,9 +1143,9 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public void playTrigger(Card host, WrappedAbility wrapperAbility, boolean isMandatory) {
-        if (prepareSingleSa(host, wrapperAbility, isMandatory)) {
-            ComputerUtil.playNoStack(wrapperAbility.getActivatingPlayer(), wrapperAbility, getGame(), true);
-        }
+//        if (prepareSingleSa(host, wrapperAbility, isMandatory)) {
+//            ComputerUtil.playNoStack(wrapperAbility.getActivatingPlayer(), wrapperAbility, getGame(), true);
+//        }
     }
 
     @Override
@@ -1153,12 +1155,12 @@ public class PlayerControllerAi extends PlayerController {
         if (tgtSA instanceof Spell) { // Isn't it ALWAYS a spell?
             Spell spell = (Spell) tgtSA;
             // TODO if mandatory AI is only forced to use mana when it's already in the pool
-            if (brains.canPlayFromEffectAI(spell, !optional, noManaCost) == AiPlayDecision.WillPlay || !optional) {
-                if (noManaCost) {
-                    return ComputerUtil.playSpellAbilityWithoutPayingManaCost(player, tgtSA, getGame());
-                }
-                return ComputerUtil.playStack(tgtSA, player, getGame());
-            }
+//            if (brains.canPlayFromEffectAI(spell, !optional, noManaCost) == AiPlayDecision.WillPlay || !optional) {
+//                if (noManaCost) {
+//                    return ComputerUtil.playSpellAbilityWithoutPayingManaCost(player, tgtSA, getGame());
+//                }
+//                return ComputerUtil.playStack(tgtSA, player, getGame());
+//            }
             return false; // didn't play spell
         }
         return true;
@@ -1177,23 +1179,24 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public boolean chooseCardsPile(SpellAbility sa, CardCollectionView pile1, CardCollectionView pile2, String faceUp) {
-        if (faceUp.equals("True")) {
-            // AI will choose the first pile if it is larger or the same
-            // TODO Improve this to be slightly more random to not be so predictable
-            return pile1.size() >= pile2.size();
-        } else if (faceUp.equals("One")) {
-            // Probably want to see if the face up pile has anything "worth it", then potentially take face down pile
-            return pile1.size() >= pile2.size();
-        } else {
-            boolean allCreatures = Iterables.all(Iterables.concat(pile1, pile2), CardPredicates.Presets.CREATURES);
-            int cmc1 = allCreatures ? ComputerUtilCard.evaluateCreatureList(pile1) : ComputerUtilCard.evaluatePermanentList(pile1);
-            int cmc2 = allCreatures ? ComputerUtilCard.evaluateCreatureList(pile2) : ComputerUtilCard.evaluatePermanentList(pile2);
-
-            // for now, this assumes that the outcome will be bad
-            // TODO: This should really have a ChooseLogic param to
-            // figure this out
-            return "Worst".equals(sa.getParam("AILogic")) ^ (cmc1 >= cmc2);
-        }
+//        if (faceUp.equals("True")) {
+//            // AI will choose the first pile if it is larger or the same
+//            // TODO Improve this to be slightly more random to not be so predictable
+//            return pile1.size() >= pile2.size();
+//        } else if (faceUp.equals("One")) {
+//            // Probably want to see if the face up pile has anything "worth it", then potentially take face down pile
+//            return pile1.size() >= pile2.size();
+//        } else {
+//            boolean allCreatures = Iterables.all(Iterables.concat(pile1, pile2), CardPredicates.Presets.CREATURES);
+//            int cmc1 = allCreatures ? ComputerUtilCard.evaluateCreatureList(pile1) : ComputerUtilCard.evaluatePermanentList(pile1);
+//            int cmc2 = allCreatures ? ComputerUtilCard.evaluateCreatureList(pile2) : ComputerUtilCard.evaluatePermanentList(pile2);
+//
+//            // for now, this assumes that the outcome will be bad
+//            // TODO: This should really have a ChooseLogic param to
+//            // figure this out
+//            return "Worst".equals(sa.getParam("AILogic")) ^ (cmc1 >= cmc2);
+//        }
+        return false;
     }
 
     @Override
@@ -1216,7 +1219,8 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public CardCollectionView cheatShuffle(CardCollectionView list) {
-        return brains.getBooleanProperty(AiProps.CHEAT_WITH_MANA_ON_SHUFFLE) ? brains.cheatShuffle(list) : list;
+//        return brains.getBooleanProperty(AiProps.CHEAT_WITH_MANA_ON_SHUFFLE) ? brains.cheatShuffle(list) : list;
+        return null;
     }
 
     @Override
@@ -1227,104 +1231,106 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public boolean payManaCost(ManaCost toPay, CostPartMana costPartMana, SpellAbility sa, String prompt /* ai needs hints as well */, ManaConversionMatrix matrix, boolean effect) {
-        return ComputerUtilMana.payManaCost(player, sa, effect);
+//        return ComputerUtilMana.payManaCost(player, sa, effect);
+        return false;
     }
 
     @Override
     public Map<Card, ManaCostShard> chooseCardsForConvokeOrImprovise(SpellAbility sa, ManaCost manaCost, CardCollectionView untappedCards, boolean improvise) {
-        final Player ai = sa.getActivatingPlayer();
-        final PhaseHandler ph = ai.getGame().getPhaseHandler();
-        //Filter out mana sources that will interfere with payManaCost()
-        CardCollection untapped = CardLists.filter(untappedCards, new Predicate<Card>() {
-            @Override
-            public boolean apply(final Card c) {
-                return c.getManaAbilities().isEmpty();
-            }
-        });
-
-        // Filter out creatures if AI hasn't attacked yet
-        if (ph.isPlayerTurn(ai) && ph.getPhase().isBefore(PhaseType.COMBAT_DECLARE_ATTACKERS)) {
-            if (improvise) {
-                untapped = CardLists.filter(untapped, new Predicate<Card>() {
-                    @Override
-                    public boolean apply(final Card c) {return !c.isCreature();
-                    }
-                });
-            } else {
-                return new HashMap<>();
-            }
-        }
-
-        //Do not convoke potential blockers until after opponent's attack
-        final CardCollectionView blockers = ComputerUtilCard.getLikelyBlockers(ai, null);
-        if ((ph.isPlayerTurn(ai) && ph.getPhase().isAfter(PhaseType.COMBAT_BEGIN)) ||
-                (!ph.isPlayerTurn(ai) && ph.getPhase().isBefore(PhaseType.COMBAT_DECLARE_BLOCKERS))) {
-            untapped.removeAll((List<?>)blockers);
-            //Add threatened creatures
-            if (!ai.getGame().getStack().isEmpty()) {
-                final List<GameObject> objects = ComputerUtil.predictThreatenedObjects(sa.getActivatingPlayer(), null);
-                for (Card c : blockers) {
-                    if (objects.contains(c) && (!improvise || c.isArtifact())) {
-                        untapped.add(c);
-                    }
-                }
-            }
-        }
-        return ComputerUtilMana.getConvokeOrImproviseFromList(manaCost, untapped, improvise);
+//        final Player ai = sa.getActivatingPlayer();
+//        final PhaseHandler ph = ai.getGame().getPhaseHandler();
+//        //Filter out mana sources that will interfere with payManaCost()
+//        CardCollection untapped = CardLists.filter(untappedCards, new Predicate<Card>() {
+//            @Override
+//            public boolean apply(final Card c) {
+//                return c.getManaAbilities().isEmpty();
+//            }
+//        });
+//
+//        // Filter out creatures if AI hasn't attacked yet
+//        if (ph.isPlayerTurn(ai) && ph.getPhase().isBefore(PhaseType.COMBAT_DECLARE_ATTACKERS)) {
+//            if (improvise) {
+//                untapped = CardLists.filter(untapped, new Predicate<Card>() {
+//                    @Override
+//                    public boolean apply(final Card c) {return !c.isCreature();
+//                    }
+//                });
+//            } else {
+//                return new HashMap<>();
+//            }
+//        }
+//
+//        //Do not convoke potential blockers until after opponent's attack
+//        final CardCollectionView blockers = ComputerUtilCard.getLikelyBlockers(ai, null);
+//        if ((ph.isPlayerTurn(ai) && ph.getPhase().isAfter(PhaseType.COMBAT_BEGIN)) ||
+//                (!ph.isPlayerTurn(ai) && ph.getPhase().isBefore(PhaseType.COMBAT_DECLARE_BLOCKERS))) {
+//            untapped.removeAll((List<?>)blockers);
+//            //Add threatened creatures
+//            if (!ai.getGame().getStack().isEmpty()) {
+//                final List<GameObject> objects = ComputerUtil.predictThreatenedObjects(sa.getActivatingPlayer(), null);
+//                for (Card c : blockers) {
+//                    if (objects.contains(c) && (!improvise || c.isArtifact())) {
+//                        untapped.add(c);
+//                    }
+//                }
+//            }
+//        }
+//        return ComputerUtilMana.getConvokeOrImproviseFromList(manaCost, untapped, improvise);
+        return null;
     }
 
     @Override
     public String chooseCardName(SpellAbility sa, Predicate<ICardFace> cpp, String valid, String message) {
-        if (sa.hasParam("AILogic")) {
-            CardCollectionView aiLibrary = player.getCardsIn(ZoneType.Library);
-            CardCollectionView oppLibrary = player.getStrongestOpponent().getCardsIn(ZoneType.Library);
-            final Card source = sa.getHostCard();
-            final String logic = sa.getParam("AILogic");
-
-            // Filter for valid options only
-            if (!valid.isEmpty()) {
-                aiLibrary = CardLists.getValidCards(aiLibrary, valid, source.getController(), source, sa);
-                oppLibrary = CardLists.getValidCards(oppLibrary, valid, source.getController(), source, sa);
-            }
-
-            if (source != null && source.getState(CardStateName.Original).hasIntrinsicKeyword("Hidden agenda")) {
-                // If any Conspiracies are present, try not to choose the same name twice
-                // (otherwise the AI will spam the same name)
-                for (Card consp : player.getCardsIn(ZoneType.Command)) {
-                    if (consp.getState(CardStateName.Original).hasIntrinsicKeyword("Hidden agenda")) {
-                        String chosenName = consp.getNamedCard();
-                        if (!chosenName.isEmpty()) {
-                            aiLibrary = CardLists.filter(aiLibrary, Predicates.not(CardPredicates.nameEquals(chosenName)));
-                        }
-                    }
-                }
-            }
-
-            if (logic.equals("MostProminentInComputerDeck")) {
-                return ComputerUtilCard.getMostProminentCardName(aiLibrary);
-            } else if (logic.equals("MostProminentInHumanDeck")) {
-                return ComputerUtilCard.getMostProminentCardName(oppLibrary);
-            } else if (logic.equals("MostProminentCreatureInComputerDeck")) {
-                CardCollectionView cards = CardLists.getValidCards(aiLibrary, "Creature", player, sa.getHostCard(), sa);
-                return ComputerUtilCard.getMostProminentCardName(cards);
-            } else if (logic.equals("BestCreatureInComputerDeck")) {
-                Card bestCreature = ComputerUtilCard.getBestCreatureAI(aiLibrary);
-                return bestCreature != null ? bestCreature.getName() : "Plains";
-            } else if (logic.equals("RandomInComputerDeck")) {
-                return Aggregates.random(aiLibrary).getName();
-            } else if (logic.equals("MostProminentSpellInComputerDeck")) {
-                CardCollectionView cards = CardLists.getValidCards(aiLibrary, "Card.Instant,Card.Sorcery", player, sa.getHostCard(), sa);
-                return ComputerUtilCard.getMostProminentCardName(cards);
-            } else if (logic.equals("CursedScroll")) {
-                return SpecialCardAi.CursedScroll.chooseCard(player, sa);
-            }
-        } else {
-            CardCollectionView list = CardLists.filterControlledBy(getGame().getCardsInGame(), player.getOpponents());
-            list = CardLists.filter(list, Predicates.not(Presets.LANDS));
-            if (!list.isEmpty()) {
-                return list.get(0).getName();
-            }
-        }
+//        if (sa.hasParam("AILogic")) {
+//            CardCollectionView aiLibrary = player.getCardsIn(ZoneType.Library);
+//            CardCollectionView oppLibrary = player.getStrongestOpponent().getCardsIn(ZoneType.Library);
+//            final Card source = sa.getHostCard();
+//            final String logic = sa.getParam("AILogic");
+//
+//            // Filter for valid options only
+//            if (!valid.isEmpty()) {
+//                aiLibrary = CardLists.getValidCards(aiLibrary, valid, source.getController(), source, sa);
+//                oppLibrary = CardLists.getValidCards(oppLibrary, valid, source.getController(), source, sa);
+//            }
+//
+//            if (source != null && source.getState(CardStateName.Original).hasIntrinsicKeyword("Hidden agenda")) {
+//                // If any Conspiracies are present, try not to choose the same name twice
+//                // (otherwise the AI will spam the same name)
+//                for (Card consp : player.getCardsIn(ZoneType.Command)) {
+//                    if (consp.getState(CardStateName.Original).hasIntrinsicKeyword("Hidden agenda")) {
+//                        String chosenName = consp.getNamedCard();
+//                        if (!chosenName.isEmpty()) {
+//                            aiLibrary = CardLists.filter(aiLibrary, Predicates.not(CardPredicates.nameEquals(chosenName)));
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (logic.equals("MostProminentInComputerDeck")) {
+//                return ComputerUtilCard.getMostProminentCardName(aiLibrary);
+//            } else if (logic.equals("MostProminentInHumanDeck")) {
+//                return ComputerUtilCard.getMostProminentCardName(oppLibrary);
+//            } else if (logic.equals("MostProminentCreatureInComputerDeck")) {
+//                CardCollectionView cards = CardLists.getValidCards(aiLibrary, "Creature", player, sa.getHostCard(), sa);
+//                return ComputerUtilCard.getMostProminentCardName(cards);
+//            } else if (logic.equals("BestCreatureInComputerDeck")) {
+//                Card bestCreature = ComputerUtilCard.getBestCreatureAI(aiLibrary);
+//                return bestCreature != null ? bestCreature.getName() : "Plains";
+//            } else if (logic.equals("RandomInComputerDeck")) {
+//                return Aggregates.random(aiLibrary).getName();
+//            } else if (logic.equals("MostProminentSpellInComputerDeck")) {
+//                CardCollectionView cards = CardLists.getValidCards(aiLibrary, "Card.Instant,Card.Sorcery", player, sa.getHostCard(), sa);
+//                return ComputerUtilCard.getMostProminentCardName(cards);
+//            } else if (logic.equals("CursedScroll")) {
+//                return SpecialCardAi.CursedScroll.chooseCard(player, sa);
+//            }
+//        } else {
+//            CardCollectionView list = CardLists.filterControlledBy(getGame().getCardsInGame(), player.getOpponents());
+//            list = CardLists.filter(list, Predicates.not(Presets.LANDS));
+//            if (!list.isEmpty()) {
+//                return list.get(0).getName();
+//            }
+//        }
         return "Morphling";
     }
 
@@ -1349,7 +1355,8 @@ public class PlayerControllerAi extends PlayerController {
     @Override
     public void resetAtEndOfTurn() {
         // TODO - if card memory is ever used to remember something for longer than a turn, make sure it's not reset here.
-        getAi().getCardMemory().clearAllRemembered();
+//        getAi().getCardMemory().clearAllRemembered();
+
     }
 
     @Override
@@ -1368,83 +1375,87 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public String chooseCardName(SpellAbility sa, List<ICardFace> faces, String message) {
-        ApiType api = sa.getApi();
-        if (null == api) {
-            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
-        }
-        return SpellApiToAi.Converter.get(api).chooseCardName(player, sa, faces);
+//        ApiType api = sa.getApi();
+//        if (null == api) {
+//            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
+//        }
+//        return SpellApiToAi.Converter.get(api).chooseCardName(player, sa, faces);
+        return null;
     }
 
     @Override
     public Card chooseDungeon(Player ai, List<PaperCard> dungeonCards, String message) {
         // TODO: improve the conditions that define which dungeon is a viable option to choose
-        List<String> dungeonNames = Lists.newArrayList();
-        for (PaperCard pc : dungeonCards) {
-            dungeonNames.add(pc.getName());
-        }
-
-        // Don't choose Tomb of Annihilation when life in danger unless we can win right away or can't lose for 0 life
-        if (ai.getController().isAI()) { // FIXME: is this needed? Can simulation ever run this for a non-AI player?
-            int lifeInDanger = (((PlayerControllerAi) ai.getController()).getAi().getIntProperty(AiProps.AI_IN_DANGER_THRESHOLD));
-            if ((ai.getLife() <= lifeInDanger && !ai.cantLoseForZeroOrLessLife())
-                    && !(ai.getLife() > 1 && ai.getWeakestOpponent().getLife() == 1)) {
-                dungeonNames.remove("Tomb of Annihilation");
-            }
-        }
-
-        int i = MyRandom.getRandom().nextInt(dungeonNames.size());
-        return Card.fromPaperCard(dungeonCards.get(i), ai);
+//        List<String> dungeonNames = Lists.newArrayList();
+//        for (PaperCard pc : dungeonCards) {
+//            dungeonNames.add(pc.getName());
+//        }
+//
+//        // Don't choose Tomb of Annihilation when life in danger unless we can win right away or can't lose for 0 life
+//        if (ai.getController().isAI()) { // FIXME: is this needed? Can simulation ever run this for a non-AI player?
+//            int lifeInDanger = (((PlayerControllerAi) ai.getController()).getAi().getIntProperty(AiProps.AI_IN_DANGER_THRESHOLD));
+//            if ((ai.getLife() <= lifeInDanger && !ai.cantLoseForZeroOrLessLife())
+//                    && !(ai.getLife() > 1 && ai.getWeakestOpponent().getLife() == 1)) {
+//                dungeonNames.remove("Tomb of Annihilation");
+//            }
+//        }
+//
+//        int i = MyRandom.getRandom().nextInt(dungeonNames.size());
+//        return Card.fromPaperCard(dungeonCards.get(i), ai);
+        return null;
     }
 
     @Override
     public List<Card> chooseCardsForSplice(SpellAbility sa, List<Card> cards) {
         // sort from best to worst
-        CardLists.sortByCmcDesc(cards);
-
-        List<Card> result = Lists.newArrayList();
-
-        SpellAbility oldSA = sa;
-        // TODO maybe add some more Logic into it
-        for (final Card c : cards) {
-            SpellAbility newSA = oldSA.copy();
-            AbilityUtils.addSpliceEffect(newSA, c);
-            // check if AI still wants or can play the card with spliced effect
-            if (AiPlayDecision.WillPlay == getAi().canPlayFromEffectAI((Spell) newSA, false, false)) {
-                oldSA = newSA;
-                result.add(c);
-            }
-        }
-        return result;
+//        CardLists.sortByCmcDesc(cards);
+//
+//        List<Card> result = Lists.newArrayList();
+//
+//        SpellAbility oldSA = sa;
+//        // TODO maybe add some more Logic into it
+//        for (final Card c : cards) {
+//            SpellAbility newSA = oldSA.copy();
+//            AbilityUtils.addSpliceEffect(newSA, c);
+//            // check if AI still wants or can play the card with spliced effect
+//            if (AiPlayDecision.WillPlay == getAi().canPlayFromEffectAI((Spell) newSA, false, false)) {
+//                oldSA = newSA;
+//                result.add(c);
+//            }
+//        }
+//        return result;
+        return null;
     }
 
     @Override
     public List<OptionalCostValue> chooseOptionalCosts(SpellAbility chosen, List<OptionalCostValue> optionalCostValues) {
-        List<OptionalCostValue> chosenOptCosts = Lists.newArrayList();
-        Cost costSoFar = chosen.getPayCosts().copy();
-
-        for (OptionalCostValue opt : optionalCostValues) {
-            // Choose the optional cost if it can be paid (to be improved later, check for playability and other conditions perhaps)
-            Cost fullCost = opt.getCost().copy().add(costSoFar);
-            SpellAbility fullCostSa = chosen.copyWithDefinedCost(fullCost);
-
-            // Playability check for Kicker
-            if (opt.getType() == OptionalCost.Kicker1 || opt.getType() == OptionalCost.Kicker2) {
-                SpellAbility kickedSaCopy = fullCostSa.copy();
-                kickedSaCopy.addOptionalCost(opt.getType());
-                Card copy = CardUtil.getLKICopy(chosen.getHostCard());
-                copy.addOptionalCostPaid(opt.getType());
-                if (ComputerUtilCard.checkNeedsToPlayReqs(copy, kickedSaCopy) != AiPlayDecision.WillPlay) {
-                    continue; // don't choose kickers we don't want to play
-                }
-            }
-
-            if (ComputerUtilCost.canPayCost(fullCostSa, player, false)) {
-                chosenOptCosts.add(opt);
-                costSoFar.add(opt.getCost());
-            }
-        }
-
-        return chosenOptCosts;
+//        List<OptionalCostValue> chosenOptCosts = Lists.newArrayList();
+//        Cost costSoFar = chosen.getPayCosts().copy();
+//
+//        for (OptionalCostValue opt : optionalCostValues) {
+//            // Choose the optional cost if it can be paid (to be improved later, check for playability and other conditions perhaps)
+//            Cost fullCost = opt.getCost().copy().add(costSoFar);
+//            SpellAbility fullCostSa = chosen.copyWithDefinedCost(fullCost);
+//
+//            // Playability check for Kicker
+//            if (opt.getType() == OptionalCost.Kicker1 || opt.getType() == OptionalCost.Kicker2) {
+//                SpellAbility kickedSaCopy = fullCostSa.copy();
+//                kickedSaCopy.addOptionalCost(opt.getType());
+//                Card copy = CardUtil.getLKICopy(chosen.getHostCard());
+//                copy.addOptionalCostPaid(opt.getType());
+//                if (ComputerUtilCard.checkNeedsToPlayReqs(copy, kickedSaCopy) != AiPlayDecision.WillPlay) {
+//                    continue; // don't choose kickers we don't want to play
+//                }
+//            }
+//
+//            if (ComputerUtilCost.canPayCost(fullCostSa, player, false)) {
+//                chosenOptCosts.add(opt);
+//                costSoFar.add(opt.getCost());
+//            }
+//        }
+//
+//        return chosenOptCosts;
+        return null;
     }
 
     @Override
@@ -1456,36 +1467,38 @@ public class PlayerControllerAi extends PlayerController {
     @Override
     public int chooseNumberForKeywordCost(SpellAbility sa, Cost cost, KeywordInterface keyword, String prompt, int max) {
         // TODO: improve the logic depending on the keyword and the playability of the cost-modified SA (enough targets present etc.)
-        int chosenAmount = 0;
-
-        Cost costSoFar = sa.getPayCosts().copy();
-
-        for (int i = 0; i < max; i++) {
-            costSoFar.add(cost);
-            SpellAbility fullCostSa = sa.copyWithDefinedCost(costSoFar);
-            if (ComputerUtilCost.canPayCost(fullCostSa, player, sa.isTrigger())) {
-                chosenAmount++;
-            } else {
-                break;
-            }
-        }
-
-        return chosenAmount;
+//        int chosenAmount = 0;
+//
+//        Cost costSoFar = sa.getPayCosts().copy();
+//
+//        for (int i = 0; i < max; i++) {
+//            costSoFar.add(cost);
+//            SpellAbility fullCostSa = sa.copyWithDefinedCost(costSoFar);
+//            if (ComputerUtilCost.canPayCost(fullCostSa, player, sa.isTrigger())) {
+//                chosenAmount++;
+//            } else {
+//                break;
+//            }
+//        }
+//
+//        return chosenAmount;
+        return 0;
     }
 
     @Override
     public CardCollection chooseCardsForEffectMultiple(Map<String, CardCollection> validMap, SpellAbility sa, String title, boolean isOptional) {
-        CardCollection choices = new CardCollection();
-
-        for (String mapKey: validMap.keySet()) {
-            CardCollection cc = validMap.get(mapKey);
-            cc.removeAll(choices);
-            Card chosen = ComputerUtilCard.getBestAI(cc);
-            if (chosen != null) {
-                choices.add(chosen);
-            }
-        }
-
-        return choices;
+//        CardCollection choices = new CardCollection();
+//
+//        for (String mapKey: validMap.keySet()) {
+//            CardCollection cc = validMap.get(mapKey);
+//            cc.removeAll(choices);
+//            Card chosen = ComputerUtilCard.getBestAI(cc);
+//            if (chosen != null) {
+//                choices.add(chosen);
+//            }
+//        }
+//
+//        return choices;
+        return null;
     }
 }
