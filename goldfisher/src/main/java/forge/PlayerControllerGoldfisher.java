@@ -167,15 +167,37 @@ public class PlayerControllerGoldfisher extends PlayerController {
     }
 
     @Override
-    public CardCollectionView choosePermanentsToSacrifice(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {
+    public CardCollectionView choosePermanentsToSacrifice(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {//TODO FIX WHEN ADD Creatures
 //        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, false, min == 0);
-        return null;
+        final CardCollection sacrificed = new CardCollection();
+        CardCollection remaining = new CardCollection(validTargets);
+
+        CardLists.sortByCmcDesc(remaining);
+        for (int i = 0; i < max; i++) {
+            sacrificed.add(remaining.getLast());
+        }
+        return sacrificed;
     }
 
+    /**
+     * Chooses permanents to be destroyed on
+     * @param sa    Spell Ability
+     * @param min
+     * @param max   Max cards to destroy
+     * @param validTargets  A collection of valid targets
+     * @param message   Message
+     * @return  Cards to be destroyed
+     */
     @Override
-    public CardCollectionView choosePermanentsToDestroy(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {
+    public CardCollectionView choosePermanentsToDestroy(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {//TODO FIX WHEN ADD Creatures
 //        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, true, min == 0);
-        return null;
+        final CardCollection destroyed = new CardCollection();
+        CardCollection remaining = new CardCollection(validTargets);
+        CardLists.sortByCmcDesc(remaining);
+        for (int i = 0; i < max; i++) {
+            destroyed.add(remaining.getLast()); //TODO Figure out if this is targeting enemy field
+        }
+        return destroyed;
     }
 
     @Override
@@ -587,6 +609,12 @@ public class PlayerControllerGoldfisher extends PlayerController {
         return Aggregates.random(sectors);
     }
 
+    /**
+     * Chooses whether to keep hand or muligan
+     * @param firstPlayer   player that owns the hand
+     * @param cardsToReturn amount of cards to return
+     * @return  true if keeping hand
+     */
     @Override
     public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {
 //        return !ComputerUtil.wantMulligan(player, cardsToReturn);
@@ -643,47 +671,50 @@ public class PlayerControllerGoldfisher extends PlayerController {
         // }
         // otherwise mulligan
 
+//        int openingHandSize = mulliganingPlayer.getStartingHandSize();
+
+//        int numLandsDesired = (mulliganingPlayer.getStartingHandSize() - cardsToReturn) / 2;
         int openingHandSize = mulliganingPlayer.getStartingHandSize();
-
-        int numLandsDesired = (mulliganingPlayer.getStartingHandSize() - cardsToReturn) / 2;
-
-        CardCollection toReturn = new CardCollection();
-        for (int i = 0; i < cardsToReturn; i++) {
-            hand.removeAll(toReturn);
-
-            CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
-            int numLandsInHand = landsInHand.size() - CardLists.count(toReturn, Presets.LANDS);
-
-            // If we're flooding with lands, get rid of the worst land we have
-            if (numLandsInHand > 0 && numLandsInHand > numLandsDesired) {
-                CardCollection producingLands = CardLists.filter(landsInHand, Presets.LANDS_PRODUCING_MANA);
-                CardCollection nonProducingLands = CardLists.filter(landsInHand, Predicates.not(Presets.LANDS_PRODUCING_MANA));
-//                Card worstLand = nonProducingLands.isEmpty() ? ComputerUtilCard.getWorstLand(producingLands)
-//                        : ComputerUtilCard.getWorstLand(nonProducingLands);
-//                toReturn.add(worstLand);
-                continue;
-            }
-
-            // See if we'd scry something to the bottom in this situation. If we want to, probably get rid of it.
-            CardCollection scryBottom = new CardCollection();
-            for (Card c : hand) {
-                // Lands are evaluated separately above, factoring in the number of cards to be returned to the library
-                if (!c.isLand() && !toReturn.contains(c) && !willPutCardOnTop(c)) {
-                    scryBottom.add(c);
+//
+        CardCollection toRet = new CardCollection();
+        CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
+        int numLandsInHand = landsInHand.size();
+        if (landsInHand.size() >= 2) {
+            if (landsInHand.size() - cardsToReturn <= 3) {
+                if ((7-cardsToReturn) <= 5) {
+                    for (int i = 0; i < cardsToReturn; i++) {
+                        if (numLandsInHand > 2) {
+                            toRet.add(landsInHand.get(0));
+                            landsInHand.remove(0);
+                            numLandsInHand--;
+                        }
+                        else {
+                            CardCollection toBottom = CardLists.getCardsWithHighestCMC(hand);
+                            toRet.add(toBottom.get(0));
+                            hand.remove(toBottom.get(0));
+                        }
+                    }
                 }
             }
-            if (!scryBottom.isEmpty()) {
-                CardLists.sortByCmcDesc(scryBottom);
-                toReturn.add(scryBottom.getFirst()); // assume the max CMC one is worse since we're not guaranteed to have lands for it
-                continue;
+        } else if (openingHandSize == 5) {
+            if (numLandsInHand == 1 && CardLists.count(hand, CardPredicates.hasCMC(1)) >= 2){
+                CardLists.sortByCmcDesc(hand);
+                toRet = hand.subList(openingHandSize, 7);
+                System.out.println(toRet.size());
             }
 
-            // If we don't want to scry anything to the bottom, remove the worst card that we have in order to satisfy
-            // the requirement
-//            toReturn.add(ComputerUtilCard.getWorstAI(hand));
+        } else if (openingHandSize == 4) {
+            if (numLandsInHand >= 1) {
+                CardLists.sortByCmcDesc(hand);
+                toRet = hand.subList(openingHandSize, 7);
+                System.out.println(toRet.size());
+            }
         }
-
-        return CardCollection.getView(toReturn);
+        for (int i = 0; i < cardsToReturn - toRet.size(); i++) {
+            toRet.add(hand.getFirst());
+            hand.remove(0);
+        }
+        return toRet;
     }
 
     @Override
@@ -716,7 +747,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     }
 
     @Override
-    public CardCollection chooseCardsToDiscardToMaximumHandSize(int numDiscard) {
+    public CardCollection chooseCardsToDiscardToMaximumHandSize(int numDiscard) {//TODO FIX
         return brains.getCardsToDiscard(numDiscard, null, null);
     }
 

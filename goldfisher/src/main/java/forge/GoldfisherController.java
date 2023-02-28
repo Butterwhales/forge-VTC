@@ -64,7 +64,7 @@ import java.util.*;
 public class GoldfisherController {
     private final Player player;
     private final Game game;
-//    private final AiCardMemory memory;
+    //    private final AiCardMemory memory;
     private Combat predictedCombat;
     private Combat predictedCombatNextTurn;
     private boolean cheatShuffle;
@@ -90,6 +90,7 @@ public class GoldfisherController {
     public boolean usesSimulation() {
         return this.useSimulation;
     }
+
     public void setUseSimulation(boolean value) {
         this.useSimulation = value;
     }
@@ -178,7 +179,7 @@ public class GoldfisherController {
                 } else if ("ChaliceOfTheVoid".equals(curse) && sa.isSpell() && CardFactoryUtil.isCounterable(host)
                         && host.getCMC() == c.getCounters(CounterEnumType.CHARGE)) {
                     return true;
-                }  else if ("BazaarOfWonders".equals(curse) && sa.isSpell() && CardFactoryUtil.isCounterable(host)) {
+                } else if ("BazaarOfWonders".equals(curse) && sa.isSpell() && CardFactoryUtil.isCounterable(host)) {
                     String hostName = host.getName();
                     for (Card card : ccvGameBattlefield) {
                         if (!card.isToken() && card.sharesNameWith(host)) {
@@ -602,6 +603,7 @@ public class GoldfisherController {
     public SpellAbility predictSpellToCastInMain2(ApiType exceptSA) {
         return predictSpellToCastInMain2(exceptSA, true);
     }
+
     private SpellAbility predictSpellToCastInMain2(ApiType exceptSA, boolean handOnly) {
 //        if (!getBooleanProperty(AiProps.PREDICT_SPELLS_FOR_MAIN2)) {
 //            return null;
@@ -642,12 +644,15 @@ public class GoldfisherController {
     public boolean reserveManaSourcesForNextSpell(SpellAbility sa, SpellAbility exceptForSa) {
         return reserveManaSources(sa, null, false, true, exceptForSa);
     }
+
     public boolean reserveManaSources(SpellAbility sa) {
         return reserveManaSources(sa, PhaseType.MAIN2, false, false, null);
     }
+
     public boolean reserveManaSources(SpellAbility sa, PhaseType phaseType, boolean enemy) {
         return reserveManaSources(sa, phaseType, enemy, true, null);
     }
+
     public boolean reserveManaSources(SpellAbility sa, PhaseType phaseType, boolean enemy, boolean forNextSpell, SpellAbility exceptForThisSa) {
 //        ManaCostBeingPaid cost = ComputerUtilMana.calculateManaCost(sa, true, 0);
 //        CardCollection manaSources = ComputerUtilMana.getManaSourcesToPayCost(cost, sa, player);
@@ -1137,6 +1142,7 @@ public class GoldfisherController {
     public CardCollection getCardsToDiscard(final int numDiscard, final String[] uTypes, final SpellAbility sa) {
         return getCardsToDiscard(numDiscard, uTypes, sa, CardCollection.EMPTY);
     }
+
     public CardCollection getCardsToDiscard(final int numDiscard, final String[] uTypes, final SpellAbility sa, final CardCollectionView exclude) {
         boolean noFiltering = sa != null && "DiscardCMCX".equals(sa.getParam("AILogic")); // list AI logic for which filtering is taken care of elsewhere
         CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
@@ -1147,14 +1153,116 @@ public class GoldfisherController {
         return getCardsToDiscard(numDiscard, numDiscard, hand, sa);
     }
 
-    public CardCollection getCardsToDiscard(int min, final int max, final CardCollection validCards, final SpellAbility sa) {
-//        if (validCards.size() < min) {
-//            return null;
-//        }
-//
-//        Card sourceCard = null;
-//        final CardCollection discardList = new CardCollection();
-//        int count = 0;
+    public CardCollection getCardsToDiscard(int min, final int max, final CardCollection validCards, final SpellAbility sa) {//TODO FIX
+        if (validCards.size() < min) {
+            return null;
+        }
+
+        Card sourceCard = null;
+        final CardCollection discardList = new CardCollection();
+        int count = 0;
+
+
+        /**
+         * number of lands in hand / number of lands on field
+         *
+         * Create a variable call totalLands.
+         *  totalLands is equal to the number of lands in hand and on the field
+         *
+         *
+         *the goal discard the most useless card.
+         * base if off of totalLands
+         *
+         * base it off of the highest cmc.
+         *
+         * If the bot has a land in hand
+         *      if totalLands-1 < highest cmc
+         *          discard the highest cmc
+         *      if it has >= 3lands in hand
+         *          discard a land
+         *      if totalLands <=2
+         *          discard the highest cmc
+         *      if number of lands in hand >= number of cards in hand/2
+         *          discard a land
+         *      If the bot has a total of lands on the field and in hand of 4 or more
+         *          discard a land
+         *
+         * if it is not discarding a land
+         *      discard the highest cmc card
+         *
+         */
+        //TODO: totalLands needs to also count the number of lands on the battlefield
+        //TODO: make a landsInHand variable. Currently totalLands is just this.
+        //TODO: Make sure it discards until it has <= the max hand size which is 7
+        //Max is the amount of cards to discard
+
+
+        // Calculate total number of lands
+        int totalLands = 0;
+        for (Card card : validCards) {
+            if (card.isLand()) {
+                totalLands++;
+            }
+        }
+
+        // Determine which card(s) to discard based on number of lands and highest cmc
+        if (totalLands > 0) {
+            int highestCmc = 0;
+            Card highestCmcCard = null;
+            for (Card card : validCards) {
+                if (card.getCMC() > highestCmc) {
+                    highestCmc = card.getCMC();
+                    highestCmcCard = card;
+                }
+            }
+
+            if (totalLands >= 4) {
+                // Discard a land
+                for (Card card : validCards) {
+                    if (card.isLand()) {
+                        discardList.add(card);
+                        break;
+                    }
+                }
+            } else if (totalLands <= 2 || totalLands - 1 < highestCmc || totalLands >= validCards.size() / 2) {
+                // Discard highest cmc card
+                discardList.add(highestCmcCard);
+            } else if (totalLands >= 3) {
+                // Discard a land
+                for (Card card : validCards) {
+                    if (card.isLand()) {
+                        discardList.add(card);
+                        break;
+                    }
+                }
+            }
+        } else {
+            // Discard highest cmc card
+            int highestCmc = 0;
+            Card highestCmcCard = null;
+            for (Card card : validCards) {
+                if (card.getCMC() > highestCmc) {
+                    highestCmc = card.getCMC();
+                    highestCmcCard = card;
+                }
+            }
+            discardList.add(highestCmcCard);
+        }
+
+        // Discard additional cards until the hand size is at most 7 or the maximum number of cards to discard has been reached
+        while (discardList.size() < max && validCards.size() - discardList.size() > 7) {
+            int highestCmc = 0;
+            Card highestCmcCard = null;
+            for (Card card : validCards) {
+                if (!discardList.contains(card) && card.getCMC() > highestCmc) {
+                    highestCmc = card.getCMC();
+                    highestCmcCard = card;
+                }
+            }
+            discardList.add(highestCmcCard);
+        }
+
+
 //        if (sa != null) {
 //            String logic = sa.getParamOrDefault("AILogic", "");
 //            sourceCard = sa.getHostCard();
@@ -1313,8 +1421,7 @@ public class GoldfisherController {
 //                }
 //            }
 //        }
-//        return discardList;
-        return null;
+        return discardList;
     }
 
     public boolean confirmAction(SpellAbility sa, PlayerActionConfirmMode mode, String message, Map<String, Object> params) {
@@ -1448,7 +1555,9 @@ public class GoldfisherController {
     }
 
     private List<SpellAbility> singleSpellAbilityList(SpellAbility sa) {
-        if (sa == null) { return null; }
+        if (sa == null) {
+            return null;
+        }
 
         final List<SpellAbility> abilities = Lists.newArrayList();
         abilities.add(sa);
@@ -1706,8 +1815,7 @@ public class GoldfisherController {
 
         try {
             Collections.sort(all, saComparator); // put best spells first
-        }
-        catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException ex) {
             System.err.println(ex.getMessage());
             String assertex = ComparatorUtil.verifyTransitivity(saComparator, all);
             Sentry.captureMessage(ex.getMessage() + "\nAssertionError [verifyTransitivity]: " + assertex);
@@ -1785,7 +1893,7 @@ public class GoldfisherController {
 
     public boolean doTrigger(SpellAbility spell, boolean mandatory) {
         if (spell instanceof WrappedAbility)
-            return doTrigger(((WrappedAbility)spell).getWrappedAbility(), mandatory);
+            return doTrigger(((WrappedAbility) spell).getWrappedAbility(), mandatory);
         if (spell.getApi() != null)
 //            return SpellApiToAi.Converter.get(spell.getApi()).doTriggerAI(player, spell, mandatory);
             return false;
@@ -1932,7 +2040,7 @@ public class GoldfisherController {
         } else if ("LowestLoseLife".equals(logic)) {
             return MyRandom.getRandom().nextInt(Math.min(player.getLife() / 3, player.getWeakestOpponent().getLife())) + 1;
         } else if ("HighestLoseLife".equals(logic)) {
-            return Math.min(player.getLife() -1,MyRandom.getRandom().nextInt(Math.max(player.getLife() / 3, player.getWeakestOpponent().getLife())) + 1);
+            return Math.min(player.getLife() - 1, MyRandom.getRandom().nextInt(Math.max(player.getLife() / 3, player.getWeakestOpponent().getLife())) + 1);
         } else if ("HighestGetCounter".equals(logic)) {
             return MyRandom.getRandom().nextInt(3);
         } else if (sa.hasSVar("EnergyToPay")) {
@@ -1952,8 +2060,7 @@ public class GoldfisherController {
     }
 
     public int chooseNumber(SpellAbility sa, String title, List<Integer> options, Player relatedPlayer) {
-        switch(sa.getApi())
-        {
+        switch (sa.getApi()) {
             case SetLife: // Reverse the Sands
                 if (relatedPlayer.equals(sa.getHostCard().getController())) {
                     return Collections.max(options);
@@ -2085,8 +2192,7 @@ public class GoldfisherController {
      * smoothComputerManaCurve.
      * </p>
      *
-     * @param in
-     *            an array of {@link Card} objects.
+     * @param in an array of {@link Card} objects.
      * @return an array of {@link Card} objects.
      */
     public CardCollectionView cheatShuffle(CardCollectionView in) {
@@ -2187,7 +2293,7 @@ public class GoldfisherController {
     }
 
     public Card chooseCardToHiddenOriginChangeZone(ZoneType destination, List<ZoneType> origin, SpellAbility sa,
-            CardCollection fetchList, Player player2, Player decider) {
+                                                   CardCollection fetchList, Player player2, Player decider) {
         if (useSimulation) {
             return simPicker.chooseCardToHiddenOriginChangeZone(destination, origin, sa, fetchList, player2, decider);
         }
