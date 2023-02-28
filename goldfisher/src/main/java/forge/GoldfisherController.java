@@ -1277,7 +1277,7 @@ public class GoldfisherController {
 //                return SpecialCardAi.VolrathsShapeshifter.targetBestCreature(player, sa);
 //            } else if ("DiscardCMCX".equals(logic)) {
 //                final int cmc = sa.getXManaCostPaid();
-//                CardCollection discards = CardLists.filter(player.getCardsIn(ZoneType.Hand), CardPredicates.hasCMC(cmc));
+//                CardCollection discards = CardLists.filter( player.getCardsIn(ZoneType.Hand), CardPredicates.hasCMC(cmc));
 //                if (discards.isEmpty()) {
 //                    return null;
 //                }

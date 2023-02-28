@@ -617,8 +617,30 @@ public class PlayerControllerGoldfisher extends PlayerController {
      */
     @Override
     public boolean mulliganKeepHand(Player firstPlayer, int cardsToReturn)  {
+
 //        return !ComputerUtil.wantMulligan(player, cardsToReturn);
         //todo implement want mulligan here
+        CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
+
+        int openingHandSize = firstPlayer.getStartingHandSize();
+
+        CardCollection toRet = new CardCollection();
+        CardCollection landsInHand = CardLists.filter(hand, Presets.LANDS);
+        int numLandsInHand = landsInHand.size();
+        if (landsInHand.size() >= 2) {
+            if (landsInHand.size() - cardsToReturn <= 3) {
+                return true;
+            }
+        } else if (openingHandSize == 5) {
+            if (numLandsInHand == 1 && CardLists.count(hand, CardPredicates.hasCMC(1)) >= 2){
+                return true;
+            }
+
+        } else if (openingHandSize == 4) {
+            if (numLandsInHand >= 1) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -632,11 +654,13 @@ public class PlayerControllerGoldfisher extends PlayerController {
         return null;
     }
 
+
     /**
-     * This is what Goldfisher uses to decide if it is going to keep a hand or mulligan it
-     * @param mulliganingPlayer
-     * @param cardsToReturn
-     * @return
+     * Regardless of whether or not we will keep this hand, we must decide which cards to discard. this function
+     * acomplishes that using the logic defined inside o of the function
+     * @param mulliganingPlayer the player object for the player that is mulliganing
+     * @param cardsToReturn the number of cards that we need to return
+     * @return a collection of cards that should be returned.
      */
     @Override
     public CardCollectionView londonMulliganReturnCards(final Player mulliganingPlayer, int cardsToReturn) {
