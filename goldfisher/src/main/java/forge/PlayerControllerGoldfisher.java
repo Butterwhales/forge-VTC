@@ -758,16 +758,16 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean playChosenSpellAbility(SpellAbility sa) {
-//        if (sa instanceof LandAbility) {
-//            if (sa.canPlay()) {
-//                sa.resolve();
-//                getGame().updateLastStateForCard(sa.getHostCard());
-//            }
-//        } else {
-//            ComputerUtil.handlePlayingSpellAbility(player, sa, getGame());
-//        }
-//        return true;
-        return false;
+        if (sa instanceof LandAbility) {
+            if (sa.canPlay()) {
+                sa.resolve();
+                getGame().updateLastStateForCard(sa.getHostCard());
+            }
+        } else {
+            // what does this do with the boolean output??????
+            brains.handlePlayingSpellAbility(player, sa, getGame());
+        }
+        return true;
     }
 
     @Override

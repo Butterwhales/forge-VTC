@@ -21,6 +21,10 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import forge.ai.AiCostDecision;
+import forge.ai.AiPlayDecision;
+import forge.ai.ComputerUtilMana;
+import forge.ai.PlayerControllerAi;
 import forge.ai.ability.ChangeZoneAi;
 import forge.ai.ability.ExploreAi;
 import forge.ai.ability.LearnAi;
@@ -31,6 +35,7 @@ import forge.deck.DeckSection;
 import forge.game.*;
 import forge.game.ability.AbilityUtils;
 import forge.game.ability.ApiType;
+import forge.game.ability.effects.CharmEffect;
 import forge.game.card.*;
 import forge.game.card.CardPredicates.Accessors;
 import forge.game.card.CardPredicates.Presets;
@@ -428,10 +433,19 @@ public class GoldfisherController {
         return landList;
     }
 
+    /**
+     * Chooses the best land to play from your hand
+     * This implementation is really lazy and only works because we are giving it a mono color deck that only contains mountains.
+     *
+     * @param landList a list of all lands currently in hand
+     * @return the land that should be played
+     */
     private Card chooseBestLandToPlay(CardCollection landList) {
-//        if (landList.isEmpty()) {
-//            return null;
-//        }
+
+        if (landList.isEmpty()) {
+            return null;
+        }
+        return landList.getFirst();
 //
 //        CardCollection nonLandsInHand = CardLists.filter(player.getCardsIn(ZoneType.Hand), Predicates.not(Presets.LANDS));
 //
@@ -561,7 +575,6 @@ public class GoldfisherController {
 //            }
 //        }
 //        return landList.get(0);
-        return null;
     }
 
     // if return true, go to next phase
@@ -1063,8 +1076,41 @@ public class GoldfisherController {
         }
 
         private int getSpellAbilityPriority(SpellAbility sa) {
+
+
+            /*
+            Spell priority should be based on playing the most spells using the as much mana as possible
+             */
+            /*
+    4 Annihilating Fire 1
+    4 Fire Ambush 2
+    4 Incendiary Flow 2
+    4 Incinerate 2
+    4 Lava Spike 3
+    4 Lightning Bolt 3
+    4 Lightning Strike 2
+    20 Mountain
+    4 Searing Spear 2
+    4 Skullcrack 2
+    4 Volcanic Hammer 2
+             */
+            Map<String, Integer> priorityMap = new HashMap<String, Integer>() {{
+                put("Annihilating Fire", 1);
+                put("Fire Ambush", 2);
+                put("Incendiary Flow", 2);
+                put("Incinerate", 2);
+                put("Lightning Strike", 2);
+                put("Skullcrack", 2);
+                put("Volcanic Hammer", 2);
+                put("Lava Spike", 3);
+                put("Lightning Bolt", 3);
+
+            }};
+
+
 //            int p = 0;
-//            Card source = sa.getHostCard();
+            Card source = sa.getHostCard();
+            return priorityMap.get(source.getName());
 //            final Player ai = source == null ? sa.getActivatingPlayer() : source.getController();
 //            if (ai == null) {
 //                System.err.println("Error: couldn't figure out the activating player and host card for SA: " + sa);
@@ -1596,6 +1642,76 @@ public class GoldfisherController {
 //            sb.append("Computer just assigned ").append(element.getName()).append(" as an attacker.");
 //            Log.debug(sb.toString());
 //        }
+    }
+
+    //Todo: Implement handlePlayingSpellAbility. This came from ComputerUtil so any methods in here are from there
+    public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game) {
+        return handlePlayingSpellAbility(ai, sa, game, null);
+        //Todo: Implement
+    }
+
+    public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game, Runnable chooseTargets) {
+        game.getStack().freezeStack();
+        final Card source = sa.getHostCard();
+        source.setSplitStateToPlayAbility(sa);
+
+        if (sa.isSpell() && !source.isCopiedSpell()) {
+            sa = AbilityUtils.addSpliceEffects(sa);
+            if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty() && ai.getController().isAI()) {
+                // we need to reconsider and retarget the SA after additional SAs have been added onto it via splice,
+                // otherwise the AI will fail to add the card to stack and that'll knock it out of the game
+                sa.resetTargets();
+                if (((PlayerControllerAi) ai.getController()).getAi().canPlaySa(sa) != AiPlayDecision.WillPlay) {
+                    // for whatever reason the AI doesn't want to play the thing with the spliced subs anymore,
+                    // proceeding past this point may result in an illegal play
+                    return false;
+                }
+            }
+
+            sa.setHostCard(game.getAction().moveToStack(source, sa));
+        }
+
+        if (!sa.isCopied()) {
+            sa.resetPaidHash();
+        }
+
+        sa = GameActionUtil.addExtraKeywordCost(sa);
+
+        if (sa.getApi() == ApiType.Charm && !CharmEffect.makeChoices(sa)) {
+            // 603.3c If no mode is chosen, the ability is removed from the stack.
+            return false;
+        }
+        if (chooseTargets != null) {
+            chooseTargets.run();
+            if (!sa.isTargetNumberValid()) {
+                return false;
+            }
+        }
+
+        final Cost cost = sa.getPayCosts();
+
+        // Remember the now-forgotten kicker cost? Why is this needed?
+        sa.getHostCard().setKickerMagnitude(source.getKickerMagnitude());
+
+        // TODO: update mana color conversion for Daxos of Meletis
+        if (cost == null) {
+            if (ComputerUtilMana.payManaCost(ai, sa, false)) {
+                game.getStack().addAndUnfreeze(sa);
+                return true;
+            }
+        } else {
+            final CostPayment pay = new CostPayment(cost, sa);
+            if (pay.payComputerCosts(new AiCostDecision(ai, sa, false))) {
+                game.getStack().addAndUnfreeze(sa);
+                if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty()) {
+                    game.getAction().reveal(sa.getSplicedCards(), ai, true, "Computer reveals spliced cards from ");
+                }
+                return true;
+            }
+        }
+        //Should not arrive here
+        System.out.println("AI failed to play " + sa.getHostCard());
+        return false;
     }
 
     private List<SpellAbility> singleSpellAbilityList(SpellAbility sa) {
