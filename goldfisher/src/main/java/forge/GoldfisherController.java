@@ -25,6 +25,7 @@ import forge.ai.ability.ChangeZoneAi;
 import forge.ai.ability.ExploreAi;
 import forge.ai.ability.LearnAi;
 import forge.ai.simulation.SpellAbilityPicker;
+import forge.card.CardStateName;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.game.*;
@@ -50,6 +51,7 @@ import forge.util.ComparatorUtil;
 import forge.util.Expressions;
 import forge.util.MyRandom;
 import io.sentry.Sentry;
+import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.*;
 
@@ -600,11 +602,11 @@ public class GoldfisherController {
         return null;
     }
 
-    public SpellAbility predictSpellToCastInMain2(ApiType exceptSA) {
+    public SpellAbility predictSpellToCastInMain2(ApiType exceptSA) { //UNUSED
         return predictSpellToCastInMain2(exceptSA, true);
     }
 
-    private SpellAbility predictSpellToCastInMain2(ApiType exceptSA, boolean handOnly) {
+    private SpellAbility predictSpellToCastInMain2(ApiType exceptSA, boolean handOnly) { //UNUSED
 //        if (!getBooleanProperty(AiProps.PREDICT_SPELLS_FOR_MAIN2)) {
 //            return null;
 //        }
@@ -699,7 +701,7 @@ public class GoldfisherController {
     }
 
     // This is for playing spells regularly (no Cascade/Ripple etc.)
-//    private AiPlayDecision canPlayAndPayFor(final SpellAbility sa) {
+//    private AiPlayDecision canPlayAndPayFor(final SpellAbility sa) { //TODO Implement
 //        if (!sa.canPlay()) {
 //            return AiPlayDecision.CantPlaySa;
 //        }
@@ -1198,69 +1200,68 @@ public class GoldfisherController {
 
 
         // Calculate total number of lands
-        int totalLands = 0;
-        for (Card card : validCards) {
-            if (card.isLand()) {
-                totalLands++;
-            }
-        }
-
-        // Determine which card(s) to discard based on number of lands and highest cmc
-        if (totalLands > 0) {
-            int highestCmc = 0;
-            Card highestCmcCard = null;
-            for (Card card : validCards) {
-                if (card.getCMC() > highestCmc) {
-                    highestCmc = card.getCMC();
-                    highestCmcCard = card;
-                }
-            }
-
-            if (totalLands >= 4) {
-                // Discard a land
-                for (Card card : validCards) {
-                    if (card.isLand()) {
-                        discardList.add(card);
-                        break;
-                    }
-                }
-            } else if (totalLands <= 2 || totalLands - 1 < highestCmc || totalLands >= validCards.size() / 2) {
-                // Discard highest cmc card
-                discardList.add(highestCmcCard);
-            } else if (totalLands >= 3) {
-                // Discard a land
-                for (Card card : validCards) {
-                    if (card.isLand()) {
-                        discardList.add(card);
-                        break;
-                    }
-                }
-            }
-        } else {
-            // Discard highest cmc card
-            int highestCmc = 0;
-            Card highestCmcCard = null;
-            for (Card card : validCards) {
-                if (card.getCMC() > highestCmc) {
-                    highestCmc = card.getCMC();
-                    highestCmcCard = card;
-                }
-            }
-            discardList.add(highestCmcCard);
-        }
-
-        // Discard additional cards until the hand size is at most 7 or the maximum number of cards to discard has been reached
-        while (discardList.size() < max && validCards.size() - discardList.size() > 7) {
-            int highestCmc = 0;
-            Card highestCmcCard = null;
-            for (Card card : validCards) {
-                if (!discardList.contains(card) && card.getCMC() > highestCmc) {
-                    highestCmc = card.getCMC();
-                    highestCmcCard = card;
-                }
-            }
-            discardList.add(highestCmcCard);
-        }
+//        int landsInHand =0;
+//        int totalLands = 0;
+//        for (Card card : validCards) {
+//            if (card.isLand()) {
+//                landsInHand++;
+//            }
+//        }
+//        final CardCollectionView onBattlefield = player.getCardsIn(ZoneType.Battlefield);
+//        final int numLandsOTB = CardLists.count(onBattlefield, Presets.LANDS);
+//        totalLands = landsInHand + numLandsOTB;
+//
+//
+//        // Determine which card(s) to discard based on number of lands and highest cmc
+//        if (totalLands > 0) {
+//            int highestCmc = 0;
+//            Card highestCmcCard = CardLists.getCardsWithHighestCMC(validCards).get(0);
+//
+//            if (totalLands >= 4) {
+//                // Discard a land
+//                for (Card card : validCards) {
+//                    if (card.isLand()) {
+//                        discardList.add(card);
+//                        break;
+//                    }
+//                }
+//            } else if (totalLands <= 2 || totalLands - 1 < highestCmcCard.getCMC() || landsInHand >= validCards.size() / 2) {
+//                // Discard highest cmc card
+//                discardList.add(highestCmcCard);
+//            } else if (totalLands >= 3) {
+//                // Discard a land
+//                for (Card card : validCards) {
+//                    if (card.isLand()) {
+//                        discardList.add(card);
+//                        break;
+//                    }
+//                }
+//            }
+//        } else {
+//            // Discard highest cmc card
+//            int highestCmc = 0;
+//            Card highestCmcCard = null;
+//            for (Card card : validCards) {
+//                if (card.getCMC() > highestCmc) {
+//                    highestCmc = card.getCMC();
+//                    highestCmcCard = card;
+//                }
+//            }
+//            discardList.add(highestCmcCard);
+//        }
+//
+//        // Discard additional cards until the hand size is at most 7 or the maximum number of cards to discard has been reached
+//        while (discardList.size() < max && validCards.size() - discardList.size() > 7) {
+//            int highestCmc = 0;
+//            Card highestCmcCard = null;
+//            for (Card card : validCards) {
+//                if (!discardList.contains(card) && card.getCMC() > highestCmc) {
+//                    highestCmc = card.getCMC();
+//                    highestCmcCard = card;
+//                }
+//            }
+//            discardList.add(highestCmcCard);
+//        }
 
 
 //        if (sa != null) {
@@ -1564,23 +1565,134 @@ public class GoldfisherController {
         return abilities;
     }
 
-    public List<SpellAbility> chooseSpellAbilityToPlay() {
+    public static List<SpellAbility> getSpellAbilities(final CardCollectionView l, final Player player) {
+        final List<SpellAbility> spellAbilities = Lists.newArrayList();
+        for (final Card c : l) {
+            spellAbilities.addAll(c.getAllPossibleAbilities(player, false));
+        }
+        return spellAbilities;
+    }
+
+    public static CardCollection getAvailableCards(final Game game, final Player player) {
+        CardCollection all = new CardCollection(player.getCardsIn(ZoneType.Hand));
+
+        all.addAll(player.getCardsIn(ZoneType.Graveyard));
+        all.addAll(player.getCardsIn(ZoneType.Command));
+        if (!player.getCardsIn(ZoneType.Library).isEmpty()) {
+            all.add(player.getCardsIn(ZoneType.Library).get(0));
+        }
+        all.addAll(game.getPlayers().getCardsIn(ZoneType.Exile));
+        all.addAll(game.getPlayers().getCardsIn(ZoneType.Battlefield));
+        return all;
+    }
+
+    public static CardCollection getAvailableLandsToPlay(final Game game, final Player player) {
+        if (!game.getStack().isEmpty() || !game.getPhaseHandler().getPhase().isMain()) {
+            return null;
+        }
+        final CardCollection hand = new CardCollection(player.getCardsIn(ZoneType.Hand));
+        hand.addAll(player.getCardsIn(ZoneType.Exile));
+        CardCollection landList = CardLists.filter(hand, Presets.LANDS);
+
+        //filter out cards that can't be played
+        landList = CardLists.filter(landList, new Predicate<Card>() {
+            @Override
+            public boolean apply(final Card c) {
+                if (!c.getSVar("NeedsToPlay").isEmpty()) {
+                    final String needsToPlay = c.getSVar("NeedsToPlay");
+                    CardCollection list = CardLists.getValidCards(game.getCardsIn(ZoneType.Battlefield), needsToPlay, c.getController(), c, null);
+                    if (list.isEmpty()) {
+                        return false;
+                    }
+                }
+                return player.canPlayLand(c);
+            }
+        });
+
+        final CardCollection landsNotInHand = new CardCollection(player.getCardsIn(ZoneType.Graveyard));
+        landsNotInHand.addAll(game.getCardsIn(ZoneType.Exile));
+        if (!player.getCardsIn(ZoneType.Library).isEmpty()) {
+            landsNotInHand.add(player.getCardsIn(ZoneType.Library).get(0));
+        }
+        for (final Card crd : landsNotInHand) {
+            if (!(crd.isLand() || (crd.isFaceDown() && crd.getState(CardStateName.Original).getType().isLand()))) {
+                continue;
+            }
+            if (!crd.mayPlay(player).isEmpty()) {
+                landList.add(crd);
+            }
+        }
+        if (landList.isEmpty()) {
+            return null;
+        }
+        return landList;
+    }
+
+    /**
+     * this includes our land for turn, so we need to evaluate whether we want to play a land here
+     *
+     * @return the spell ability to play. This is a list. I don't know why. it can only contain a single card. why is your conventions like this. pls
+     */
+    public List<SpellAbility> chooseSpellAbilityToPlay() { //TODO Magic VTC: Card Tree
 //        // Reset cached predicted combat, as it may be stale. It will be
 //        // re-created if needed and used for any AI logic that needs it.
-//        predictedCombat = null;
+        predictedCombat = null;
 //        // Also reset predicted combat for next turn here
-//        predictedCombatNextTurn = null;
+        predictedCombatNextTurn = null;
 //
 //        // Reset priority mana reservation that's meant to work for one spell only
 //        memory.clearMemorySet(AiCardMemory.MemorySet.HELD_MANA_SOURCES_FOR_NEXT_SPELL);
 //
-//        if (useSimulation) {
-//            return singleSpellAbilityList(simPicker.chooseSpellAbilityToPlay(null));
-//        }
-//
-//        CardCollection playBeforeLand = CardLists.filter(
-//            player.getCardsIn(ZoneType.Hand), CardPredicates.hasSVar("PlayBeforeLandDrop")
-//        );
+        if (useSimulation) {
+            return singleSpellAbilityList(simPicker.chooseSpellAbilityToPlay(null));
+        }
+
+        CardCollection playBeforeLand = CardLists.filter(
+                player.getCardsIn(ZoneType.Hand), CardPredicates.hasSVar("PlayBeforeLandDrop")
+        );
+
+        CardCollection cards = getAvailableCards(game, player);
+//        CardCollection landsOnField = new CardCollection();
+        List<SpellAbility> saList = Lists.newArrayList();
+        saList = getSpellAbilities(cards, player);
+        CardCollection lands2 = getAvailableLandsToPlay(game, player);
+        List<SpellAbility> lands = Lists.newArrayList();
+        List<SpellAbility> spells = Lists.newArrayList();
+        List<SpellAbility> abilities = Lists.newArrayList();
+
+        if (lands2 != null)
+            if (!lands2.isEmpty()) {
+                Card land = lands2.get(0);
+                LandAbility la = new LandAbility(land, player, null);
+                la.setCardState(land.getCurrentState());
+                if (la.canPlay()) {
+                    abilities.add(la);
+                }
+
+                // add mayPlay option
+                for (CardPlayOption o : land.mayPlay(player)) {
+                    la = new LandAbility(land, player, o.getAbility());
+                    la.setCardState(land.getCurrentState());
+                    if (la.canPlay()) {
+                        abilities.add(la);
+                    }
+                }
+                if (!abilities.isEmpty()) {
+                    return abilities;
+                }
+            }
+
+
+        for (SpellAbility card : saList) {
+            if (card.isSpell() && spellCanBePlayed(card.getHostCard(), player)) spells.add(card);
+        }
+        if (spells.size() > 0) {
+//            System.out.println(spells.get(0));
+            return singleSpellAbilityList(spells.get(0));
+        } else
+            return null;
+
+
 //        if (!playBeforeLand.isEmpty()) {
 //            SpellAbility wantToPlayBeforeLand = chooseSpellAbilityToPlayFromList(
 //                ComputerUtilAbility.getSpellAbilities(playBeforeLand, player), false
@@ -1630,7 +1742,10 @@ public class GoldfisherController {
 //        }
 //
 //        return singleSpellAbilityList(getSpellAbilityToPlay());
-        return null;
+    }
+
+    private boolean spellCanBePlayed(Card card, Player player) {
+        return card.getCMC() < CardLists.count(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS);
     }
 
     private boolean isSafeToHoldLandDropForMain2(Card landToPlay) {
@@ -1752,7 +1867,12 @@ public class GoldfisherController {
         return true;
     }
 
-    private final SpellAbility getSpellAbilityToPlay() {
+    /**
+     * getSpellAbilityToPlay ignores lands and chooses a spell ability to play
+     *
+     * @return
+     */
+    private final SpellAbility getSpellAbilityToPlay() { //TODO Magic VTC: Card Tree
 //        CardCollection cards = ComputerUtilAbility.getAvailableCards(game, player);
 //        cards = ComputerUtilCard.dedupeCards(cards);
 //        List<SpellAbility> saList = Lists.newArrayList();
@@ -1809,7 +1929,7 @@ public class GoldfisherController {
         return null;
     }
 
-    private SpellAbility chooseSpellAbilityToPlayFromList(final List<SpellAbility> all, boolean skipCounter) {
+    private SpellAbility chooseSpellAbilityToPlayFromList(final List<SpellAbility> all, boolean skipCounter) {//TODO implement
         if (all == null || all.isEmpty())
             return null;
 
