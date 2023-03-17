@@ -1137,7 +1137,7 @@ public class GoldfisherController {
 //            }
 //
 //            return p;
-            return 0;
+//            return 0;
         }
     };
 
@@ -1155,9 +1155,21 @@ public class GoldfisherController {
         return getCardsToDiscard(numDiscard, numDiscard, hand, sa);
     }
 
+    /**
+     * when forced to discard cards, this function is called, and we choose which cards we want to discard
+     *
+     * @param min        - good question
+     * @param max        - the number of cards to discard
+     * @param validCards - the number of cards to be discarded
+     * @param sa         - the spell ability that is being used to force the discard? probably? i don't know
+     * @return
+     */
     public CardCollection getCardsToDiscard(int min, final int max, final CardCollection validCards, final SpellAbility sa) {//TODO FIX
         if (validCards.size() < min) {
             return null;
+        }
+        if (validCards.size() < max) {
+            return validCards;
         }
 
         Card sourceCard = null;
@@ -1197,6 +1209,37 @@ public class GoldfisherController {
         //TODO: make a landsInHand variable. Currently totalLands is just this.
         //TODO: Make sure it discards until it has <= the max hand size which is 7
         //Max is the amount of cards to discard
+
+        for (int i = 0; i < max; i++) {
+            CardCollectionView hand = player.getCardsIn(ZoneType.Hand);
+            CardCollectionView otb = player.getCardsIn(ZoneType.Battlefield);
+            Card highestCMC = CardLists.getCardsWithHighestCMC(validCards).get(0);
+            int landsInHand = CardLists.count(hand, Presets.LANDS);
+            int landsOTB = CardLists.count(otb, Presets.LANDS);
+            int totalLands = landsOTB + landsInHand;
+            if (landsInHand >= 0) {
+                if (totalLands - 1 < highestCMC.getCMC()) {
+                    discardList.add(highestCMC);
+                } else if (landsInHand >= 3) {
+                    discardList.add(CardLists.filter(validCards, Presets.LANDS).get(0));
+                } else if (totalLands <= 2) {
+                    discardList.add(highestCMC);
+                } else if (landsInHand >= hand.size() / 2 || totalLands >= 4) {
+                    discardList.add(CardLists.filter(validCards, Presets.LANDS).get(0));
+                } else {
+                    discardList.add(highestCMC);
+                }
+
+            } else {
+                discardList.add(highestCMC);
+            }
+
+
+        }
+        for (int i = discardList.size(); i < max; i++) {
+            discardList.add(CardLists.getCardsWithHighestCMC(validCards).get(0));
+        }
+        return discardList;
 
 
         // Calculate total number of lands
@@ -1422,7 +1465,7 @@ public class GoldfisherController {
 //                }
 //            }
 //        }
-        return discardList;
+//        return discardList;
     }
 
     public boolean confirmAction(SpellAbility sa, PlayerActionConfirmMode mode, String message, Map<String, Object> params) {
