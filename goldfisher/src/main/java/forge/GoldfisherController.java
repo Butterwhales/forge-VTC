@@ -1719,6 +1719,7 @@ public class GoldfisherController {
            else don't cast the spell - may have to return the spell to the players hand
          */
         // TODO: update mana color conversion for Daxos of Meletis
+
         if (cost == null) {
             if (ComputerUtilMana.payManaCost(ai, sa, false)) {
                 game.getStack().addAndUnfreeze(sa);
