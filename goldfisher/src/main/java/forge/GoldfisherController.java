@@ -1695,7 +1695,7 @@ public class GoldfisherController {
        // System.out.println(sa.findSubAbilityByType());
         //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
-        // I think I need to figure out how to make the intial ability have a target of "each player"
+        // I think I need to figure out how to make the initial ability have a target of "each player"
         if(sa.usesTargeting()){
             System.out.println(sa.getHostCard());
             x.add(ai.getOpponents().getFirst());
@@ -1709,6 +1709,15 @@ public class GoldfisherController {
         // Remember the now-forgotten kicker cost? Why is this needed?
         sa.getHostCard().setKickerMagnitude(source.getKickerMagnitude());
 
+
+        /*
+        1. Get the cost of the spell ability
+        2. We need to check how many untapped lands we have
+        3. If we have lands >= the cost of the ability
+                tap them
+                pay the cost from the mana pool
+           else don't cast the spell - may have to return the spell to the players hand
+         */
         // TODO: update mana color conversion for Daxos of Meletis
         if (cost == null) {
             if (ComputerUtilMana.payManaCost(ai, sa, false)) {
@@ -1729,6 +1738,24 @@ public class GoldfisherController {
         System.out.println("AI failed to play " + sa.getHostCard());
         return false;
     }
+
+    private boolean tapLands(Cost cost){
+        CardCollection untappedLands = new CardCollection();
+        for(Card c:CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)){
+            if (!c.isTapped()) {
+                untappedLands.add(c);
+            }
+        }
+        //TODO HEY IDIOTS THIS IS WHERE YOU LEFT OFF
+        // convert cost into an int so that it can be compared to size or actually check to make sure it has the right colors of mana.
+        // The goal of the statement below is to check to see if there is enough untapped lands to pay the cost.
+        // if there is enough
+        //      tap them
+        //      use ManaPool.payManaCostFromPool
+
+        if(untappedLands.size() >= cost.)
+    }
+
 
     private List<SpellAbility> singleSpellAbilityList(SpellAbility sa) {
         if (sa == null) {
@@ -1920,7 +1947,13 @@ public class GoldfisherController {
     }
 
     private boolean spellCanBePlayed(Card card, Player player) {
-        return card.getCMC() <= CardLists.count(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS);
+        int mana = 0;
+        for (Card land:CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)) {
+            if (!land.isTapped()) {
+                mana++;
+            }
+        }
+        return card.getCMC() <= mana;
     }
 
     private boolean isSafeToHoldLandDropForMain2(Card landToPlay) {
