@@ -1681,6 +1681,7 @@ public class GoldfisherController {
             // 603.3c If no mode is chosen, the ability is removed from the stack.
             return false;
         }
+        System.out.println(sa.getHostCard());
         if (chooseTargets != null) {
             chooseTargets.run();
             if (!sa.isTargetNumberValid()) {

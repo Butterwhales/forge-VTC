@@ -30,6 +30,7 @@ import forge.game.keyword.Keyword;
 import forge.game.keyword.KeywordInterface;
 import forge.game.mana.Mana;
 import forge.game.mana.ManaConversionMatrix;
+import forge.game.mana.ManaPool;
 import forge.game.phase.PhaseHandler;
 import forge.game.player.*;
 import forge.game.replacement.ReplacementEffect;
@@ -1316,8 +1317,12 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean payManaCost(ManaCost toPay, CostPartMana costPartMana, SpellAbility sa, String prompt /* ai needs hints as well */, ManaConversionMatrix matrix, boolean effect) {
-//        return ComputerUtilMana.payManaCost(player, sa, effect);
-        return false;
+        // return ComputerUtilMana.payManaCost(player, sa, effect);
+        for (int i = 0; i < toPay.getCMC(); i++) {
+            final ManaPool manapool = player.getManaPool();
+//            saPayment.getPayCosts().hasTapCost()
+        }
+        return true;
     }
 
     @Override
