@@ -58,6 +58,7 @@ import forge.util.MyRandom;
 import io.sentry.Sentry;
 import org.apache.commons.lang3.ObjectUtils;
 
+import java.lang.annotation.Target;
 import java.util.*;
 
 /**
@@ -1688,6 +1689,20 @@ public class GoldfisherController {
                 return false;
             }
         }
+        TargetChoices x = new TargetChoices();
+
+        System.out.println(sa);
+       // System.out.println(sa.findSubAbilityByType());
+        //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
+        // and then "Skullcrack deals 3 damage to target player or planeswalker."
+        // I think I need to figure out how to make the intial ability have a target of "each player"
+        if(sa.usesTargeting()){
+            System.out.println(sa.getHostCard());
+            x.add(ai.getOpponents().getFirst());
+
+        }
+        //if()
+        sa.setTargets(x);
 
         final Cost cost = sa.getPayCosts();
 
@@ -1905,7 +1920,7 @@ public class GoldfisherController {
     }
 
     private boolean spellCanBePlayed(Card card, Player player) {
-        return card.getCMC() < CardLists.count(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS);
+        return card.getCMC() <= CardLists.count(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS);
     }
 
     private boolean isSafeToHoldLandDropForMain2(Card landToPlay) {
