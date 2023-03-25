@@ -56,9 +56,7 @@ import forge.util.ComparatorUtil;
 import forge.util.Expressions;
 import forge.util.MyRandom;
 import io.sentry.Sentry;
-import org.apache.commons.lang3.ObjectUtils;
 
-import java.lang.annotation.Target;
 import java.util.*;
 
 /**
@@ -1646,12 +1644,12 @@ public class GoldfisherController {
     }
 
     //Todo: Implement handlePlayingSpellAbility. This came from ComputerUtil so any methods in here are from there
-    public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game) {
+    public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game) {
         return handlePlayingSpellAbility(ai, sa, game, null);
         //Todo: Implement
     }
 
-    public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game, Runnable chooseTargets) {
+    public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game, Runnable chooseTargets) {
         game.getStack().freezeStack();
         final Card source = sa.getHostCard();
         source.setSplitStateToPlayAbility(sa);
@@ -1692,11 +1690,11 @@ public class GoldfisherController {
         TargetChoices x = new TargetChoices();
 
         System.out.println(sa);
-       // System.out.println(sa.findSubAbilityByType());
+        // System.out.println(sa.findSubAbilityByType());
         //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
         // I think I need to figure out how to make the initial ability have a target of "each player"
-        if(sa.usesTargeting()){
+        if (sa.usesTargeting()) {
             System.out.println(sa.getHostCard());
             x.add(ai.getOpponents().getFirst());
 
@@ -1732,7 +1730,7 @@ public class GoldfisherController {
                 if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty()) {
                     game.getAction().reveal(sa.getSplicedCards(), ai, true, "Computer reveals spliced cards from ");
                 }
-                return true;
+                return tapLands(cost);
             }
         }
         //Should not arrive here
@@ -1740,21 +1738,39 @@ public class GoldfisherController {
         return false;
     }
 
-    private boolean tapLands(Cost cost){
+    /**
+     * Creates a CardCollection containing all the untapped lands on the battlefield under the players control.
+     * @return a CardCollection containing only the players untapped lands.
+     */
+    public CardCollection getUntappedLands(){
         CardCollection untappedLands = new CardCollection();
         for(Card c:CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)){
             if (!c.isTapped()) {
                 untappedLands.add(c);
             }
         }
-        //TODO HEY IDIOTS THIS IS WHERE YOU LEFT OFF
-        // convert cost into an int so that it can be compared to size or actually check to make sure it has the right colors of mana.
-        // The goal of the statement below is to check to see if there is enough untapped lands to pay the cost.
-        // if there is enough
-        //      tap them
-        //      use ManaPool.payManaCostFromPool
+        return untappedLands;
+    }
 
-        if(untappedLands.size() >= cost.)
+    private boolean tapLands(Cost cost) {
+        CardCollection untappedLands;
+        untappedLands = getUntappedLands();
+        Iterator<Card> iter = untappedLands.iterator();
+        int cmc = cost.getTotalMana().getCMC();
+        if (cmc > untappedLands.size()){
+            return false;
+        }
+
+        while (cmc > 0 && iter.hasNext()){
+            Card land = iter.next();
+            land.tap(true);
+            for (SpellAbility la: land.getAllPossibleAbilities(player, true)) {
+                land.addAbilityActivated(la);
+            }
+            cmc --;
+        }
+
+        return true;
     }
 
 
@@ -1854,46 +1870,71 @@ public class GoldfisherController {
                 player.getCardsIn(ZoneType.Hand), CardPredicates.hasSVar("PlayBeforeLandDrop")
         );
 
-        CardCollection cards = getAvailableCards(game, player);
-//        CardCollection landsOnField = new CardCollection();
-        List<SpellAbility> saList = Lists.newArrayList();
-        saList = getSpellAbilities(cards, player);
-        CardCollection lands2 = getAvailableLandsToPlay(game, player);
-        List<SpellAbility> lands = Lists.newArrayList();
-        List<SpellAbility> spells = Lists.newArrayList();
-        List<SpellAbility> abilities = Lists.newArrayList();
+        CardCollectionView cardsInHand = player.getCardsIn(ZoneType.Hand);
 
-        if (lands2 != null)
-            if (!lands2.isEmpty()) {
-                Card land = lands2.get(0);
-                LandAbility la = new LandAbility(land, player, null);
-                la.setCardState(land.getCurrentState());
+//        CardCollection cards = getAvailableCards(game, player);
+//        System.out.println(cardsInHand);
+
+        //Gets the available mana to use
+        CardCollection landsOnField;
+        landsOnField = player.getLandsInPlay();
+        int totalManaAvail = 0;
+        for (Card card : landsOnField) {
+            int manaGenerated = 0;
+            if (card.isTapped()) {
+                continue;
+            }
+            for (SpellAbility ability : card.getManaAbilities()) {
+                int newMana = ability.amountOfManaGenerated(false);
+                if (manaGenerated <= newMana) {
+                    totalManaAvail += newMana;
+                }
+            }
+        }
+
+        //Generates the tree of moves
+        CardTree cardTree = new CardTree();
+        cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery());
+//        System.out.println(cardTree);
+
+        //Gets the Next Spell/Land to play
+        Card cardToPlay = cardTree.getBestCard();
+        cardTree.empty();
+
+        if (cardToPlay == null)
+            return null;
+
+        System.out.println("Card to play: "+ cardToPlay.getName() + " CMC: " + cardToPlay.getCMC());
+
+        //Choose best land ability
+        List<SpellAbility> abilities = Lists.newArrayList();
+        if (cardToPlay.isLand()){
+            LandAbility la = new LandAbility(cardToPlay, player, null);
+            la.setCardState(cardToPlay.getCurrentState());
+            if (la.canPlay()) {
+                abilities.add(la);
+            }
+
+            // add mayPlay option
+            for (CardPlayOption o : cardToPlay.mayPlay(player)) {
+                la = new LandAbility(cardToPlay, player, o.getAbility());
+                la.setCardState(cardToPlay.getCurrentState());
                 if (la.canPlay()) {
                     abilities.add(la);
                 }
-
-                // add mayPlay option
-                for (CardPlayOption o : land.mayPlay(player)) {
-                    la = new LandAbility(land, player, o.getAbility());
-                    la.setCardState(land.getCurrentState());
-                    if (la.canPlay()) {
-                        abilities.add(la);
-                    }
-                }
-                if (!abilities.isEmpty()) {
-                    return abilities;
-                }
             }
-
-
-        for (SpellAbility card : saList) {
-            if (card.isSpell() && spellCanBePlayed(card.getHostCard(), player)) spells.add(card);
+            if (!abilities.isEmpty()) {
+                return abilities;
+            }
         }
-        if (spells.size() > 0) {
-//            System.out.println(spells.get(0));
-            return singleSpellAbilityList(spells.get(0));
-        } else
+
+        abilities.addAll(cardToPlay.getAllPossibleAbilities(player, true));
+        System.out.println(abilities);
+        if (abilities.isEmpty()){
             return null;
+        }else {
+            return singleSpellAbilityList(abilities.get(0));
+        }
 
 
 //        if (!playBeforeLand.isEmpty()) {
@@ -1949,7 +1990,7 @@ public class GoldfisherController {
 
     private boolean spellCanBePlayed(Card card, Player player) {
         int mana = 0;
-        for (Card land:CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)) {
+        for (Card land : CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)) {
             if (!land.isTapped()) {
                 mana++;
             }
