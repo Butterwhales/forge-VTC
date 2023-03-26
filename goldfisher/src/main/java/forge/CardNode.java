@@ -100,8 +100,6 @@ public class CardNode {
         if (!card.isLand()) {
             if (card.getName().equals("Price of Progress")){
                 totalDamage = 0;
-
-
                 for(Card c: CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)){
                     if (!c.isBasicLand()) {
                         totalDamage += 2;

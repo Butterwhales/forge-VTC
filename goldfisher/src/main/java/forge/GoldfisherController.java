@@ -17,6 +17,7 @@
  */
 package forge;
 
+import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
@@ -43,6 +44,7 @@ import forge.game.card.*;
 import forge.game.card.CardPredicates.Accessors;
 import forge.game.card.CardPredicates.Presets;
 import forge.game.combat.Combat;
+import forge.game.combat.CombatUtil;
 import forge.game.cost.*;
 import forge.game.keyword.Keyword;
 import forge.game.phase.PhaseType;
@@ -59,6 +61,7 @@ import forge.util.Aggregates;
 import forge.util.ComparatorUtil;
 import forge.util.Expressions;
 import forge.util.MyRandom;
+import forge.util.collect.FCollectionView;
 import io.sentry.Sentry;
 
 import java.util.*;
@@ -1622,29 +1625,40 @@ public class GoldfisherController {
     }
 
     public void declareAttackers(Player attacker, Combat combat) {
+        System.out.println("Function: declareAttackers");
 //        // 12/2/10(sol) the decision making here has moved to getAttackers()
 //        AiAttackController aiAtk = new AiAttackController(attacker);
 //        lastAttackAggression = aiAtk.declareAttackers(combat);
 //
-//        // if invalid: just try an attack declaration that we know to be legal
-//        if (!CombatUtil.validateAttackers(combat)) {
-//            combat.clearAttackers();
-//            final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();
-//            System.err.println("AI Attack declaration invalid, defaulting to: " + legal);
-//            for (final Map.Entry<Card, GameEntity> mandatoryAttacker : legal.entrySet()) {
-//                combat.addAttacker(mandatoryAttacker.getKey(), mandatoryAttacker.getValue());
-//            }
-//            if (!CombatUtil.validateAttackers(combat)) {
+        // if invalid: just try an attack declaration that we know to be legal
+        if (!CombatUtil.validateAttackers(combat)) {
+            combat.clearAttackers();
+            final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();
+            System.err.println("AI Attack declaration invalid, defaulting to: " + legal);
+            for (final Map.Entry<Card, GameEntity> mandatoryAttacker : legal.entrySet()) {
+                combat.addAttacker(mandatoryAttacker.getKey(), mandatoryAttacker.getValue());
+            }
+            if (!CombatUtil.validateAttackers(combat)) {
+                //TODO GABE LOOK HERE
+                CardCollection creatures = attacker.getCreaturesInPlay();
+                for (Card creature: creatures) {
+                    final FCollectionView<GameEntity> defs = combat.getDefenders();
+                    GameEntity defender = defs.getFirst();
+                    combat.addAttacker(creature, defender);
+                }
+
+                System.out.println(combat.getAttackers());
+
 //                aiAtk.declareAttackers(combat);
-//            }
-//        }
-//
-//        for (final Card element : combat.getAttackers()) {
-//            // tapping of attackers happens after Propaganda is paid for
-//            final StringBuilder sb = new StringBuilder();
-//            sb.append("Computer just assigned ").append(element.getName()).append(" as an attacker.");
-//            Log.debug(sb.toString());
-//        }
+            }
+        }
+
+        for (final Card element : combat.getAttackers()) {
+            // tapping of attackers happens after Propaganda is paid for
+            final StringBuilder sb = new StringBuilder();
+            sb.append("Computer just assigned ").append(element.getName()).append(" as an attacker.");
+            Log.debug(sb.toString());
+        }
     }
 
     //Todo: Implement handlePlayingSpellAbility. This came from ComputerUtil so any methods in here are from there
@@ -1693,8 +1707,8 @@ public class GoldfisherController {
             // 603.3c If no mode is chosen, the ability is removed from the stack.
             return false;
         }
-//        System.out.println(sa.getHostCard());
-        System.out.println(sa.getHostCard().getMaxDamageFromSource());
+
+        //This Targeting should be somewhere else.
         if (chooseTargets != null) {
             chooseTargets.run();
 
@@ -1720,7 +1734,7 @@ public class GoldfisherController {
             sa.setTargets(x);
         }
 
-        System.out.println(sa + " --------Skull");
+        System.out.println(sa);
 
 
         final Cost cost = sa.getPayCosts();
@@ -1923,7 +1937,6 @@ public class GoldfisherController {
         if (game.getPhaseHandler().getPhase().isBefore(PhaseType.MAIN1))
             return null;
         cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery(), player.getOpponentsGreatestLifeTotal());
-//        System.out.println(cardTree);
 
 
 
