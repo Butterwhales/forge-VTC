@@ -119,7 +119,7 @@ public class CardNode {
         if (enemyHealth < totalDamage) {
             maxValue += 10; //Add 10 for terminal state
         }
-        maxValue += value;
+        maxValue += value + totalDamage;
     }
 
     /**

@@ -30,6 +30,7 @@ import forge.ai.ability.ExploreAi;
 import forge.ai.ability.LearnAi;
 import forge.ai.simulation.SpellAbilityPicker;
 import forge.card.CardStateName;
+import forge.card.mana.ManaCost;
 import forge.card.mana.ManaCostShard;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
@@ -47,6 +48,7 @@ import forge.game.keyword.Keyword;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.player.PlayerActionConfirmMode;
+import forge.game.player.PlayerCollection;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.replacement.ReplacementType;
 import forge.game.spellability.*;
@@ -1691,7 +1693,7 @@ public class GoldfisherController {
             // 603.3c If no mode is chosen, the ability is removed from the stack.
             return false;
         }
-        System.out.println(sa.getHostCard());
+//        System.out.println(sa.getHostCard());
         System.out.println(sa.getHostCard().getMaxDamageFromSource());
         if (chooseTargets != null) {
             chooseTargets.run();
@@ -1710,12 +1712,16 @@ public class GoldfisherController {
         // I think I need to figure out how to make the initial ability have a target of "each player"
         if (sa.usesTargeting()) {
 
-//            System.out.println(sa.getHostCard());
-            x.add(ai.getOpponents().getFirst());
-
+//            System.out.println(sa);
+            Player opponent = ai.getOpponents().getFirst();
+            if (opponent.canBeTargetedBy(sa)){
+                x.add(opponent);
+            }
+            sa.setTargets(x);
         }
-        //if()
-        sa.setTargets(x);
+
+        System.out.println(sa + " --------Skull");
+
 
         final Cost cost = sa.getPayCosts();
 
@@ -1745,7 +1751,7 @@ public class GoldfisherController {
                 if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty()) {
                     game.getAction().reveal(sa.getSplicedCards(), ai, true, "Computer reveals spliced cards from ");
                 }
-                return tapLands(cost);
+                return true;
             }
         }
         //Should not arrive here
@@ -1767,11 +1773,11 @@ public class GoldfisherController {
         return untappedLands;
     }
 
-    private boolean tapLands(Cost cost) {
+    public boolean tapLands(ManaCost cost) {
         CardCollection untappedLands;
         untappedLands = getUntappedLands();
         Iterator<Card> iter = untappedLands.iterator();
-        int cmc = cost.getTotalMana().getCMC();
+        int cmc = cost.getCMC();
         if (cmc > untappedLands.size()){
             return false;
         }
@@ -1781,6 +1787,7 @@ public class GoldfisherController {
             land.tap(true);
             for (SpellAbility la: land.getAllPossibleAbilities(player, true)) {
                 land.addAbilityActivated(la);
+//                la.check
             }
             cmc --;
         }

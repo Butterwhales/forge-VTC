@@ -1186,9 +1186,9 @@ public class PlayerControllerGoldfisher extends PlayerController {
     public void orderAndPlaySimultaneousSa(List<SpellAbility> activePlayerSAs) {
         for (final SpellAbility sa : getAi().orderPlaySa(activePlayerSAs)) {
             if (sa.isTrigger()) {
-//                if (prepareSingleSa(sa.getHostCard(), sa, true)) {
+                if (prepareSingleSa(sa.getHostCard(), sa, true)) {
 //                    ComputerUtil.playStack(sa, player, getGame());
-//                }
+                }
                 return;
             } else {
                 if (sa.isCopied()) {
@@ -1207,7 +1207,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
                             sa.setTargets(tc);
                         }
                         // FIXME: the new implementation (below) requires implementing setupNewTargets in the AI controller, among other possible changes, otherwise breaks AI
-                        // sa.setupNewTargets(player);
+                         sa.setupNewTargets(player);
                     }
                 }
                 // need finally add the new spell to the stack
@@ -1217,6 +1217,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     }
 
     private boolean prepareSingleSa(final Card host, final SpellAbility sa, boolean isMandatory) {
+        System.out.println("Function: prepareSingleSa");
         if (sa.getApi() == ApiType.Charm) {
             return CharmEffect.makeChoices(sa);
         }
@@ -1238,6 +1239,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean playSaFromPlayEffect(SpellAbility tgtSA) {
+        System.out.println("Function: playSaFromPlayEffect");
         boolean optional = tgtSA.hasParam("Optional");
         boolean noManaCost = tgtSA.hasParam("WithoutManaCost");
         if (tgtSA instanceof Spell) { // Isn't it ALWAYS a spell?
@@ -1319,10 +1321,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public boolean payManaCost(ManaCost toPay, CostPartMana costPartMana, SpellAbility sa, String prompt /* ai needs hints as well */, ManaConversionMatrix matrix, boolean effect) {
         // return ComputerUtilMana.payManaCost(player, sa, effect);
-        for (int i = 0; i < toPay.getCMC(); i++) {
-            final ManaPool manapool = player.getManaPool();
-//            saPayment.getPayCosts().hasTapCost()
-        }
+        brains.tapLands(toPay);
         return true;
     }
 
