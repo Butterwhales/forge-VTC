@@ -30,6 +30,7 @@ import forge.ai.ability.ExploreAi;
 import forge.ai.ability.LearnAi;
 import forge.ai.simulation.SpellAbilityPicker;
 import forge.card.CardStateName;
+import forge.card.mana.ManaCostShard;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.game.*;
@@ -1649,6 +1650,15 @@ public class GoldfisherController {
         //Todo: Implement
     }
 
+    /**
+     * This is where we essentially do everything. A lot of this code should be removed in the final version because it is not ours and is probably not needed.
+     *
+     * @param ai
+     * @param sa
+     * @param game
+     * @param chooseTargets
+     * @return
+     */
     public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game, Runnable chooseTargets) {
         game.getStack().freezeStack();
         final Card source = sa.getHostCard();
@@ -1688,9 +1698,9 @@ public class GoldfisherController {
             }
         }
         TargetChoices x = new TargetChoices();
-
+        //sa.set
 //        System.out.println(sa);
-        // System.out.println(sa.findSubAbilityByType());
+       // System.out.println(sa.findSubAbilityByType());
         //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
         // I think I need to figure out how to make the initial ability have a target of "each player"
@@ -1717,7 +1727,7 @@ public class GoldfisherController {
            else don't cast the spell - may have to return the spell to the players hand
          */
         // TODO: update mana color conversion for Daxos of Meletis
-
+        //TODO: Replace this function with our own
         if (cost == null) {
             if (ComputerUtilMana.payManaCost(ai, sa, false)) {
                 game.getStack().addAndUnfreeze(sa);
