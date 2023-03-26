@@ -20,6 +20,10 @@ public class CardNode {
      * The Converted Mana Cost of the Card
      */
     int cmc;
+    /**
+     * Total Damage of the branch
+     */
+    int totalDamage;
 
     /**
      * Represents a card
@@ -79,12 +83,26 @@ public class CardNode {
     /**
      * Grades the tree
      */
-    public void grade() {
+    public void grade(int enemyHealth) {
+        int maxLeafDamage = 0;
         for (CardNode leaf : leaves) {
-            leaf.grade();
+            leaf.grade(enemyHealth);
             maxValue += leaf.value;
-//            totalCMC += node.card.getCMC();
+            if (leaf.totalDamage > maxLeafDamage){
+                maxLeafDamage = leaf.totalDamage;
+            }
         }
+
+        if (!card.isLand()) {
+            totalDamage += 3; //TODO set based on card
+        }
+
+        totalDamage += maxLeafDamage;
+
+        if (enemyHealth < totalDamage) {
+            maxValue += 10; //Add 10 for terminal state
+        }
+        maxValue += value;
     }
 
     /**
@@ -108,21 +126,22 @@ public class CardNode {
      * Removes unnecessary leaves from a branch
      *
      * @param landPlayed - Was a land played this turn
-     * @param mana - The players available mana
+     * @param mana       - The players available mana
      */
     public void pruneLeaves(boolean landPlayed, int mana) {
         mana -= cmc;
 
         if (card.isLand()) {
             landPlayed = true;
+            mana += 1;
         }
 
         for (int i = leaves.size() - 1; i >= 0; i--) {
             CardNode leaf = leaves.get(i);
-            if (mana - leaf.cmc <= 0){
+            if (mana - leaf.cmc < 0) {
                 leaves.remove(leaf);
             }
-            if (landPlayed && card.isLand()) {
+            if (landPlayed && leaf.card.isLand()) {
                 leaves.remove(leaf);
             }
 
@@ -137,17 +156,17 @@ public class CardNode {
         leaves.clear();
     }
 
-    public int getGrade(){
+    public int getGrade() {
         return maxValue;
     }
 
     @Override
     public String toString() {
-        String string = card.getName() + "[ ";
-        for (CardNode leaf:leaves) {
-            string = string.concat(leaf.toString() + " : " + leaf.cmc);
+        String string = card.getName() + "(" + maxValue + ", " + totalDamage + ")"+ "[ ";
+        for (CardNode leaf : leaves) {
+            string = string.concat(leaf.toString());
 
-            if (leaves.indexOf(leaf) != leaves.size()-1){
+            if (leaves.indexOf(leaf) != leaves.size() - 1) {
                 string = string.concat(", ");
             }
         }

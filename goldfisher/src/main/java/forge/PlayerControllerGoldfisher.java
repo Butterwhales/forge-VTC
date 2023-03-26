@@ -768,7 +768,6 @@ public class PlayerControllerGoldfisher extends PlayerController {
         } else {
             // what does this do with the boolean output??????
             brains.handlePlayingSpellAbility(player, sa, getGame());
-//            brains.
         }
         return true;
     }

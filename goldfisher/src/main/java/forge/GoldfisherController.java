@@ -1689,13 +1689,13 @@ public class GoldfisherController {
         }
         TargetChoices x = new TargetChoices();
 
-        System.out.println(sa);
+//        System.out.println(sa);
         // System.out.println(sa.findSubAbilityByType());
         //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
         // I think I need to figure out how to make the initial ability have a target of "each player"
         if (sa.usesTargeting()) {
-            System.out.println(sa.getHostCard());
+//            System.out.println(sa.getHostCard());
             x.add(ai.getOpponents().getFirst());
 
         }
@@ -1894,8 +1894,17 @@ public class GoldfisherController {
 
         //Generates the tree of moves
         CardTree cardTree = new CardTree();
-        cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery());
+
+        System.out.println("-------------------------------------------------------------------------------------------------");
+        System.out.println("Turn: " + game.getPhaseHandler().getTurn() + " " + game.getPhaseHandler().getPlayerTurn() + " " + game.getPhaseHandler().getPhase());
+
+        if (game.getPhaseHandler().getPhase().isBefore(PhaseType.MAIN1))
+            return null;
+        cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery(), player.getOpponentsGreatestLifeTotal());
 //        System.out.println(cardTree);
+
+
+
 
         //Gets the Next Spell/Land to play
         Card cardToPlay = cardTree.getBestCard();
@@ -1929,7 +1938,7 @@ public class GoldfisherController {
         }
 
         abilities.addAll(cardToPlay.getAllPossibleAbilities(player, true));
-        System.out.println(abilities);
+//        System.out.println(abilities);
         if (abilities.isEmpty()){
             return null;
         }else {

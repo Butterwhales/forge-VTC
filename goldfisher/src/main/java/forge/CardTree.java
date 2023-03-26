@@ -2,6 +2,7 @@ package forge;
 
 import forge.game.card.Card;
 import forge.game.card.CardCollectionView;
+import forge.game.spellability.SpellAbility;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,44 +20,46 @@ public class CardTree {
      * @param cards     - The cards that go in to the tree (The Players hand)
      * @param manaAvail - The Players available mana
      */
-    public void generateTree(CardCollectionView cards, int manaAvail, int landsPlayed, boolean canPlaySorcery) {
+    public void generateTree(CardCollectionView cards, int manaAvail, int landsPlayed, boolean canPlaySorcery, int enemyHealth) {
         ExecuteTimer t = new ExecuteTimer();
         for (Card card : cards) {
             addRoot(card);
-//            addBranches(card, removeRoot(card, cards));
         }
 
         for (CardNode root : roots) {
             addBranches(root, removeCard(root.card, cards));
         }
 
-        boolean playedLand = true;
-        if (landsPlayed == 0 && canPlaySorcery)
-            playedLand = false;
+        boolean playedLand = landsPlayed != 0 || !canPlaySorcery;
+//        System.out.println("Lands played: " + playedLand);
 
         pruneLeaves(manaAvail, playedLand, canPlaySorcery);
 
-        grade();
+        grade(enemyHealth);
         long totalLeaves = countLeaves();
 
         t.end();
 
         if (roots.isEmpty())
             return;
+
         //Debug Prints
-        System.out.println("-------------------------------------------------------------------------------------------------");
-        System.out.println("Mana Avail: " + manaAvail);
+        System.out.println("Mana Avail: " + manaAvail + " Enemy Health: " + enemyHealth);
         System.out.println("Tree Generation Took: " + t + " Total Roots: " + roots.size() + " Total Leaves: " + totalLeaves);
-        System.out.println("Roots " + roots.size() + ": " + roots);
+        System.out.println("Roots " + roots.size() + ": ");
+        for (CardNode root:roots) {
+            System.out.println(root);
+        }
+        System.out.println();
         System.out.println("Cards " + cards.size() + ": " + cards);
     }
 
     /**
      * Grades the tree
      */
-    public void grade() {
+    public void grade(int enemyHealth) {
         for (CardNode root : roots) {
-            root.grade();
+            root.grade(enemyHealth);
         }
     }
 
