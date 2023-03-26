@@ -34,6 +34,7 @@ import forge.card.mana.ManaCostShard;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.game.*;
+import forge.game.ability.AbilityKey;
 import forge.game.ability.AbilityUtils;
 import forge.game.ability.ApiType;
 import forge.game.ability.effects.CharmEffect;
@@ -1691,13 +1692,16 @@ public class GoldfisherController {
             return false;
         }
         System.out.println(sa.getHostCard());
+        System.out.println(sa.getHostCard().getMaxDamageFromSource());
         if (chooseTargets != null) {
             chooseTargets.run();
+
             if (!sa.isTargetNumberValid()) {
                 return false;
             }
         }
         TargetChoices x = new TargetChoices();
+
         //sa.set
 //        System.out.println(sa);
        // System.out.println(sa.findSubAbilityByType());
@@ -1705,6 +1709,7 @@ public class GoldfisherController {
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
         // I think I need to figure out how to make the initial ability have a target of "each player"
         if (sa.usesTargeting()) {
+
 //            System.out.println(sa.getHostCard());
             x.add(ai.getOpponents().getFirst());
 

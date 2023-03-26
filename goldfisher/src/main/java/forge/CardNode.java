@@ -1,6 +1,10 @@
 package forge;
 
 import forge.game.card.Card;
+import forge.game.card.CardCollection;
+import forge.game.card.CardLists;
+import forge.game.card.CardPredicates;
+import forge.game.zone.ZoneType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +98,20 @@ public class CardNode {
         }
 
         if (!card.isLand()) {
-            totalDamage += 3; //TODO set based on card
+            if (card.getName().equals("Price of Progress")){
+                totalDamage = 0;
+
+
+                for(Card c: CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)){
+                    if (!c.isBasicLand()) {
+                        totalDamage += 2;
+                    }
+                }
+            } else {
+                //card.getAllSpellAbilities();
+                totalDamage += 3; //TODO set based on card
+            }
+
         }
 
         totalDamage += maxLeafDamage;

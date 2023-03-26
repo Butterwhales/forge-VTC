@@ -14,10 +14,12 @@ public class CardValues {
             case "Mountain":
                 return 0;
             case "Lightning Bolt":
+            case "Chain Lightning": // add the ability to copy when mana is available
             case "Lava Spike":
                 return 1;
             case "Skullcrack":
             case "Incendiary Flow":
+            case "Price of Progress":
             case "Incinerate":
             case "Lightning Strike":
             case "Searing Spear":
