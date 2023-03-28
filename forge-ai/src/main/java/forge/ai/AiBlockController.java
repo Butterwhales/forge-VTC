@@ -1055,7 +1055,7 @@ public class AiBlockController {
         clearBlockers(combat, possibleBlockers);
 
         diff = (ai.getLife() * 2) - 5; // This is the minimal gain for an unnecessary trade
-        if (ai.getController().isAI() && diff > 0 && ((PlayerControllerAi) ai.getController()).getAi().getBooleanProperty(AiProps.PLAY_AGGRO)) {
+        if (ai.getController().isAI() && diff > 0 && ai.getController() instanceof PlayerControllerAi && ((PlayerControllerAi) ai.getController()).getAi().getBooleanProperty(AiProps.PLAY_AGGRO)) {
             diff = 0;
         }
 

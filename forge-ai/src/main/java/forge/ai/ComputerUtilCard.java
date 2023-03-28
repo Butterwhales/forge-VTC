@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import forge.card.mana.ManaCost;
+import forge.game.player.PlayerController;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -669,12 +670,19 @@ public class ComputerUtilCard {
      * @return attacker will die
      */
     public static boolean canBeBlockedProfitably(final Player ai, Card attacker, boolean checkingOther) {
-        AiBlockController aiBlk = new AiBlockController(ai, checkingOther);
-        Combat combat = new Combat(ai);
-        combat.addAttacker(attacker, ai);
-        final List<Card> attackers = Lists.newArrayList(attacker);
-        aiBlk.assignBlockersGivenAttackers(combat, attackers);
-        return ComputerUtilCombat.attackerWouldBeDestroyed(ai, attacker, combat);
+        if (ai.getController() instanceof PlayerControllerAi || ai.getController() instanceof PlayerControllerHuman) {
+            AiBlockController aiBlk = new AiBlockController(ai, checkingOther);
+            Combat combat = new Combat(ai);
+            combat.addAttacker(attacker, ai);
+            final List<Card> attackers = Lists.newArrayList(attacker);
+            aiBlk.assignBlockersGivenAttackers(combat, attackers);
+            return ComputerUtilCombat.attackerWouldBeDestroyed(ai, attacker, combat);
+        }
+        else {
+            System.out.println("I am against the goldfisher!");
+            return false;
+        }
+
     }
 
     public static boolean canBeKilledByRoyalAssassin(final Player ai, final Card card) {
