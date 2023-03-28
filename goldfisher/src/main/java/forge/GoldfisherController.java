@@ -1661,6 +1661,10 @@ public class GoldfisherController {
         }
     }
 
+
+
+
+
     //Todo: Implement handlePlayingSpellAbility. This came from ComputerUtil so any methods in here are from there
     public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game) {
         return handlePlayingSpellAbility(ai, sa, game, null);
@@ -1709,6 +1713,7 @@ public class GoldfisherController {
         }
 
         //This Targeting should be somewhere else.
+//        System.out.println(sa.getHostCard());
         if (chooseTargets != null) {
             chooseTargets.run();
 
