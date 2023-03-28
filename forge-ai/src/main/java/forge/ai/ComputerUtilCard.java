@@ -670,19 +670,18 @@ public class ComputerUtilCard {
      * @return attacker will die
      */
     public static boolean canBeBlockedProfitably(final Player ai, Card attacker, boolean checkingOther) {
-        if (ai.getController() instanceof PlayerControllerAi || ai.getController() instanceof PlayerControllerHuman) {
+        try {
             AiBlockController aiBlk = new AiBlockController(ai, checkingOther);
             Combat combat = new Combat(ai);
             combat.addAttacker(attacker, ai);
             final List<Card> attackers = Lists.newArrayList(attacker);
             aiBlk.assignBlockersGivenAttackers(combat, attackers);
             return ComputerUtilCombat.attackerWouldBeDestroyed(ai, attacker, combat);
-        }
-        else {
-            System.out.println("I am against the goldfisher!");
+        } catch (ClassCastException e) {
+            //TODO: CODE This better later
+            System.out.println("I am fighting goldfisher! for real this time though");
             return false;
         }
-
     }
 
     public static boolean canBeKilledByRoyalAssassin(final Player ai, final Card card) {
