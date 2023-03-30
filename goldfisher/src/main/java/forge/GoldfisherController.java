@@ -1631,6 +1631,32 @@ public class GoldfisherController {
 //        lastAttackAggression = aiAtk.declareAttackers(combat);
 //
         // if invalid: just try an attack declaration that we know to be legal
+        //TODO Implement Attacker logic
+        //Things we need: The power and toughness of each attacking creature.
+        // The power and toughness of each defending creature.
+        // For the card monastary swiftspear we need to teach the bot combat tricks
+        // Implement Chump blocking
+        //
+        // If the opponent has no creatures.
+        //      Swing with all attackers.
+        // If the opponent has no untapped creatures.
+        //      If we can deal lethal by swinging with all.
+        //          Swing with board
+        //
+        //If the opponent has no untapped creatures with a higher power than the lowest toughness of the attacking creatures
+        //      If the highest power of non of the opponents creatures in greater than the lowest toughness of our creatures
+        //          swing with board
+        //
+        //
+        // else don't swing
+        //
+        //Decision tree:
+        // Attackers: Max tree : maximize the amount of damage we do to the opponent while minimizing the amount of damage we will receive on the crack back.
+        //      If we will take more damage on the crack back than we will do by swinging. Don't
+        //
+
+
+
         if (!CombatUtil.validateAttackers(combat)) {
             combat.clearAttackers();
             final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();

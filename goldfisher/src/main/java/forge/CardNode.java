@@ -98,16 +98,18 @@ public class CardNode {
         }
 
         if (!card.isLand()) {
-            if (card.getName().equals("Price of Progress")){
-                totalDamage = 0;
-                for(Card c: CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)){
-                    if (!c.isBasicLand()) {
-                        totalDamage += 2;
+            if(!card.isCreature()){
+                if (card.getName().equals("Price of Progress")){
+                    totalDamage = 0;
+                    for(Card c: CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)){
+                        if (!c.isBasicLand()) {
+                            totalDamage += 2;
+                        }
                     }
+                } else {
+                    //card.getAllSpellAbilities();
+                    totalDamage += 3; //TODO set based on card
                 }
-            } else {
-                //card.getAllSpellAbilities();
-                totalDamage += 3; //TODO set based on card
             }
 
         }
@@ -115,7 +117,7 @@ public class CardNode {
         totalDamage += maxLeafDamage;
 
         if (enemyHealth < totalDamage) {
-            maxValue += 10; //Add 10 for terminal state
+            maxValue += 100; //Add 100 for terminal state
         }
         maxValue += value + totalDamage;
     }
