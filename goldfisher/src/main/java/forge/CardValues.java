@@ -28,6 +28,9 @@ public class CardValues {
                 return 2;
             case "Annihilating Fire":
                 return 3;
+            case "Goblin Guide":
+            case "Monastery Swiftspear":
+                return 6;
 
             default: return -1;
         }
