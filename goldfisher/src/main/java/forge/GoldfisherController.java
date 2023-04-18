@@ -22,10 +22,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import forge.ai.AiCostDecision;
-import forge.ai.AiPlayDecision;
-import forge.ai.ComputerUtilMana;
-import forge.ai.PlayerControllerAi;
+import forge.ai.*;
 import forge.ai.ability.ChangeZoneAi;
 import forge.ai.ability.ExploreAi;
 import forge.ai.ability.LearnAi;
@@ -1619,51 +1616,35 @@ public class GoldfisherController {
 
     // declares blockers for given defender in a given combat
     public void declareBlockersFor(Player defender, Combat combat) {
-//        AiBlockController block = new AiBlockController(defender, defender != player);
-//        // When player != defender, AI should declare blockers for its benefit.
-//        block.assignBlockersForCombat(combat);
+        BlockController block = new BlockController(defender, defender != player);
+        // When player != defender, Goldfisher should declare blockers for its benefit.
+        block.assignBlockersForCombat(combat);
     }
 
     public void declareAttackers(Player attacker, Combat combat) {
-        System.out.println("Function: declareAttackers");
-//        // 12/2/10(sol) the decision making here has moved to getAttackers()
-//        AiAttackController aiAtk = new AiAttackController(attacker);
-//        lastAttackAggression = aiAtk.declareAttackers(combat);
-//
+        AttackController goldfishAttack = new AttackController(attacker);
+        lastAttackAggression = goldfishAttack.declareAttackers(combat);
+
         // if invalid: just try an attack declaration that we know to be legal
         if (!CombatUtil.validateAttackers(combat)) {
             combat.clearAttackers();
             final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();
-            System.err.println("AI Attack declaration invalid, defaulting to: " + legal);
+            System.err.println("Goldfish Attack declaration invalid, defaulting to: " + legal);
             for (final Map.Entry<Card, GameEntity> mandatoryAttacker : legal.entrySet()) {
                 combat.addAttacker(mandatoryAttacker.getKey(), mandatoryAttacker.getValue());
             }
             if (!CombatUtil.validateAttackers(combat)) {
-                //TODO GABE LOOK HERE
-                CardCollection creatures = attacker.getCreaturesInPlay();
-                for (Card creature: creatures) {
-                    final FCollectionView<GameEntity> defs = combat.getDefenders();
-                    GameEntity defender = defs.getFirst();
-                    combat.addAttacker(creature, defender);
-                }
-
-                System.out.println(combat.getAttackers());
-
-//                aiAtk.declareAttackers(combat);
+                goldfishAttack.declareAttackers(combat);
             }
         }
 
         for (final Card element : combat.getAttackers()) {
             // tapping of attackers happens after Propaganda is paid for
             final StringBuilder sb = new StringBuilder();
-            sb.append("Computer just assigned ").append(element.getName()).append(" as an attacker.");
-            Log.debug(sb.toString());
+            sb.append("Goldfisher just assigned ").append(element.getName()).append(" as an attacker.");
+            System.out.println(sb);
         }
     }
-
-
-
-
 
     //Todo: Implement handlePlayingSpellAbility. This came from ComputerUtil so any methods in here are from there
     public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game) {

@@ -2,10 +2,8 @@ package forge;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
+import forge.ai.ComputerUtilCombat;
 import forge.ai.ability.ProtectAi;
 import forge.card.ColorSet;
 import forge.card.ICardFace;
@@ -35,6 +33,7 @@ import forge.game.phase.PhaseHandler;
 import forge.game.player.*;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.spellability.*;
+import forge.game.trigger.Trigger;
 import forge.game.trigger.WrappedAbility;
 import forge.game.zone.Zone;
 import forge.game.zone.ZoneType;
@@ -108,8 +107,8 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Map<Card, Integer> assignCombatDamage(Card attacker, CardCollectionView blockers, CardCollectionView remaining, int damageDealt, GameEntity defender, boolean overrideOrder) {
-//        return ComputerUtilCombat.distributeAIDamage(attacker, blockers, remaining, damageDealt, defender, overrideOrder);
-        return null;
+//        System.out.println("Function: assignCombatDamage");
+        return ComputerUtilCombat.distributeAIDamage(attacker, blockers, remaining, damageDealt, defender, overrideOrder);
     }
 
     @Override
@@ -120,6 +119,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Map<Byte, Integer> specifyManaCombo(SpellAbility sa, ColorSet colorSet, int manaAmount, boolean different) {
+        System.out.println("Function: specifyManaCombo");
 //        Map<Byte, Integer> result = new HashMap<>();
 //        for (int i = 0; i < manaAmount; ++i) {
 //            Byte chosen = chooseColor("", sa, colorSet);
@@ -138,6 +138,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Integer announceRequirements(SpellAbility ability, String announce) {
+        System.out.println("Function: announceRequirements");
         // For now, these "announcements" are made within the AI classes of the appropriate SA effects
 //        if (ability.getApi() != null) {
 //            switch (ability.getApi()) {
@@ -192,6 +193,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
      */
     @Override
     public CardCollectionView choosePermanentsToDestroy(SpellAbility sa, int min, int max, CardCollectionView validTargets, String message) {//TODO FIX WHEN ADD Creatures
+        System.out.println("Function: choosePermanentsToDestroy");
 //        return ComputerUtil.choosePermanentsToSacrifice(player, validTargets, max, sa, true, min == 0);
         final CardCollection destroyed = new CardCollection();
         CardCollection remaining = new CardCollection(validTargets);
@@ -204,12 +206,14 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollectionView chooseCardsForEffect(CardCollectionView sourceList, SpellAbility sa, String title, int min, int max, boolean isOptional, Map<String, Object> params) {
+        System.out.println("Function: chooseCardsForEffect");
 //        return brains.chooseCardsForEffect(sourceList, sa, min, max, isOptional, params);
         return null;
     }
 
     @Override
     public <T extends GameEntity> T chooseSingleEntityForEffect(FCollectionView<T> optionList, DelayedReveal delayedReveal, SpellAbility sa, String title, boolean isOptional, Player targetedPlayer, Map<String, Object> params) {
+        System.out.println("Function: chooseSingleEntityForEffect");
 //        if (delayedReveal != null) {
 //            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
 //        }
@@ -225,6 +229,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     public <T extends GameEntity> List<T> chooseEntitiesForEffect(
             FCollectionView<T> optionList, int min, int max, DelayedReveal delayedReveal, SpellAbility sa, String title,
             Player targetedPlayer, Map<String, Object> params) {
+        System.out.println("Function: chooseEntitiesForEffect");
 //        if (delayedReveal != null) {
 //            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
 //        }
@@ -245,6 +250,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public List<SpellAbility> chooseSpellAbilitiesForEffect(List<SpellAbility> spells, SpellAbility sa, String title,
             int num, Map<String, Object> params) {
+        System.out.println("Function: chooseSpellAbilitiesForEffect");
 //        List<SpellAbility> remaining = Lists.newArrayList(spells);
 //        List<SpellAbility> selecteds = Lists.newArrayList();
 //        SpellAbility selected;
@@ -262,6 +268,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public SpellAbility chooseSingleSpellForEffect(List<SpellAbility> spells, SpellAbility sa, String title,
             Map<String, Object> params) {
+        System.out.println("Function: chooseSingleSpellForEffect");
 //        ApiType api = sa.getApi();
 //        if (null == api) {
 //            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
@@ -288,14 +295,15 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean confirmTrigger(WrappedAbility wrapper) {
+        System.out.println("Function: confirmTrigger");
         final SpellAbility sa = wrapper.getWrappedAbility();
-        //final Trigger regtrig = wrapper.getTrigger();
+        final Trigger regtrig = wrapper.getTrigger();
 //        if (ComputerUtilAbility.getAbilitySourceName(sa).equals("Deathmist Raptor")) {
 //            return true;
 //        }
-//        if (wrapper.isMandatory()) {
-//            return true;
-//        }
+        if (wrapper.isMandatory()) {
+            return true;
+        }
 //        // Store/replace target choices more properly to get this SA cleared.
 //        TargetChoices tc = null;
 //        TargetChoices subtc = null;
@@ -327,7 +335,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 //        }
 //
 //        return ret;
-        return false;
+        return true;
     }
 
     @Override
@@ -337,24 +345,26 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollection orderBlockers(Card attacker, CardCollection blockers) {
-//        return AiBlockController.orderBlockers(attacker, blockers);
-        return null;
+        return BlockController.orderBlockers(attacker, blockers);
     }
 
     @Override
     public List<Card> exertAttackers(List<Card> attackers) {
+        System.out.println("Function: exertAttackers");
 //        return AiAttackController.exertAttackers(attackers, brains.getAttackAggression());
         return null;
     }
 
     @Override
     public CardCollection orderBlocker(Card attacker, Card blocker, CardCollection oldBlockers) {
-//    	return AiBlockController.orderBlocker(attacker, blocker, oldBlockers);
+        System.out.println("Function: orderBlocker");
+//    	return BlockController.orderBlocker(attacker, blocker, oldBlockers);
         return null;
     }
 
     @Override
     public CardCollection orderAttackers(Card blocker, CardCollection attackers) {
+        System.out.println("Function: orderAttackers");
 //        return AiBlockController.orderAttackers(blocker, attackers);
         return null;
     }
@@ -371,6 +381,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public ImmutablePair<CardCollection, CardCollection> arrangeForScry(CardCollection topN) {
+        System.out.println("Function: arrangeForScry");
 //        CardCollection toBottom = new CardCollection();
 //        CardCollection toTop = new CardCollection();
 //
@@ -393,6 +404,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
      */
     @Override
     public ImmutablePair<CardCollection, CardCollection> arrangeForSurveil(CardCollection topN) {
+        System.out.println("Function: arrangeForSurveil");
 //        CardCollection toGraveyard = new CardCollection();
 //        CardCollection toTop = new CardCollection();
 //
@@ -417,6 +429,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean willPutCardOnTop(Card c) {
+        System.out.println("Function: willPutCardOnTop");
         // This is used for Clash. Currently uses Scry logic to determine whether the card should be put on top.
         // Note that the AI does not know what will happen next (another clash or that would become his topdeck)
 
@@ -426,6 +439,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollectionView orderMoveToZoneList(CardCollectionView cards, ZoneType destinationZone, SpellAbility source) {
+        System.out.println("Function: orderMoveToZoneList");
         //TODO Add more logic for AI ordering here
 
 //        if (cards.isEmpty()) {
@@ -526,6 +540,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollection chooseCardsToDiscardFrom(Player p, SpellAbility sa, CardCollection validCards, int min, int max) {
+        System.out.println("Function: chooseCardsToDiscardFrom");
 //        if (p == player) {
 //            return brains.getCardsToDiscard(min, max, validCards, sa);
 //        }
@@ -540,6 +555,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public void playSpellAbilityForFree(SpellAbility copySA, boolean mayChooseNewTargets) {
+        System.out.println("Function: playSpellAbilityForFree");
         // Ai is known to set targets in doTrigger, so if it cannot choose new targets, we won't call canPlays
 //        if (mayChooseNewTargets) {
 //            if (copySA instanceof Spell) {
@@ -555,6 +571,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public void playSpellAbilityNoStack(SpellAbility effectSA, boolean canSetupTargets) {
+        System.out.println("Function: playSpellAbilityNoStack");
 //        if (canSetupTargets)
 //            brains.doTrigger(effectSA, true); // first parameter does not matter, since return value won't be used
 //        ComputerUtil.playNoStack(player, effectSA, getGame(), true);
@@ -562,12 +579,14 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollectionView chooseCardsToDelve(int genericAmount, CardCollection grave) {
+        System.out.println("Function: chooseCardsToDelve");
 //        return getAi().chooseCardsToDelve(genericAmount, grave);
         return null;
     }
 
     @Override
     public CardCollectionView chooseCardsToDiscardUnlessType(int num, CardCollectionView hand, String uType, SpellAbility sa) {
+        System.out.println("Function: chooseCardsToDiscardUnlessType");
 //        String [] splitUTypes = uType.split(",");
 //        CardCollection cardsOfType = new CardCollection();
 //        for (String part : splitUTypes) {
@@ -591,6 +610,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public String chooseSomeType(String kindOfType, SpellAbility sa, Collection<String> validTypes, List<String> invalidTypes, boolean isOptional) {
+        System.out.println("Function: chooseSomeType");
 //        String chosen = ComputerUtil.chooseSomeType(player, kindOfType, sa, validTypes, invalidTypes);
 //        if (StringUtils.isBlank(chosen) && !validTypes.isEmpty()) {
 //            chosen = validTypes.iterator().next();
@@ -602,6 +622,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Object vote(SpellAbility sa, String prompt, List<Object> options, ListMultimap<Object, Player> votes, Player forPlayer) {
+        System.out.println("Function: vote");
 //        return ComputerUtil.vote(player, options, sa, votes, forPlayer);
         return null;
     }
@@ -648,6 +669,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollectionView getCardsToMulligan(Player firstPlayer)  {
+        System.out.println("Function: getCardsToMulligan");
 //        if (!ComputerUtil.wantMulligan(player, 0)) {
 //            return null;
 //        }
@@ -785,6 +807,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean payManaOptional(Card c, Cost cost, SpellAbility sa, String prompt, ManaPaymentPurpose purpose) {
+        System.out.println("Function: payManaOptional");
         // TODO replace with EmptySa
 //        final Ability ability = new AbilityStatic(c, cost, null) { @Override public void resolve() {} };
 //        ability.setActivatingPlayer(c.getController(), true);
@@ -811,6 +834,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public int chooseNumber(SpellAbility sa, String string, int min, int max, Map<String, Object> params) {
+        System.out.println("Function: chooseNumber");
 //        ApiType api = sa.getApi();
 //        if (null == api) {
 //            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
@@ -861,6 +885,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean chooseBinary(SpellAbility sa, String question, BinaryChoiceType kindOfChoice, Boolean defaultVal) {
+        System.out.println("Function: chooseBinary");
 //        switch (kindOfChoice) {
 //            case TapOrUntap: return true;
 //            case UntapOrLeaveTapped:
@@ -921,6 +946,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public boolean chooseBinary(SpellAbility sa, String question, BinaryChoiceType kindOfChoice,
             Map<String, Object> params) {
+        System.out.println("Function: chooseBinary");
 //        ApiType api = sa.getApi();
 //        if (null == api) {
 //            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
@@ -931,6 +957,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Card chooseProtectionShield(GameEntity entityBeingDamaged, List<String> options, Map<String, Card> choiceMap) {
+        System.out.println("Function: chooseProtectionShield");
 //        int i = MyRandom.getRandom().nextInt(options.size());
 //        return choiceMap.get(options.get(i));
         return null;
@@ -938,6 +965,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public List<AbilitySub> chooseModeForAbility(SpellAbility sa, List<AbilitySub> possible, int min, int num, boolean allowRepeat) {
+        System.out.println("Function: chooseModeForAbility");
 //        List<AbilitySub> result = brains.chooseModeForAbility(sa, possible, min, num, allowRepeat);
 //        if (result != null) {
 //            return result;
@@ -959,6 +987,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public byte chooseColorAllowColorless(String message, Card card, ColorSet colors) {
+        System.out.println("Function: chooseColorAllowColorless");
 //        final String c = ComputerUtilCard.getMostProminentColor(player.getCardsIn(ZoneType.Hand));
 //        byte chosenColorMask = MagicColor.fromName(c);
 //        if ((colors.getColor() & chosenColorMask) != 0) {
@@ -970,6 +999,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public byte chooseColor(String message, SpellAbility sa, ColorSet colors) {
+        System.out.println("Function: chooseColor");
 //        if (colors.countColors() < 2) {
 //            return Iterables.getFirst(colors, MagicColor.WHITE);
 //        }
@@ -996,6 +1026,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public List<String> chooseColors(String message, SpellAbility sa, int min, int max, List<String> options) {
+        System.out.println("Function: chooseColors");
 //        return ComputerUtilCard.chooseColor(sa, min, max, options);
         return null;
     }
@@ -1009,6 +1040,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public CounterType chooseCounterType(List<CounterType> options, SpellAbility sa, String prompt,
             Map<String, Object> params) {
+        System.out.println("Function: chooseCounterType");
 //        // short cut if there is no options to choose
 //        if (options.size() <= 1) {
 //            return Iterables.getFirst(options, null);
@@ -1232,6 +1264,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public void playTrigger(Card host, WrappedAbility wrapperAbility, boolean isMandatory) {
+        System.out.println("Function: ");
 //        if (prepareSingleSa(host, wrapperAbility, isMandatory)) {
 //            ComputerUtil.playNoStack(wrapperAbility.getActivatingPlayer(), wrapperAbility, getGame(), true);
 //        }
@@ -1263,12 +1296,14 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public TargetChoices chooseNewTargetsFor(SpellAbility ability, Predicate<GameObject> filter, boolean optional) {
+        System.out.println("Function: chooseNewTargetsFor");
         // AI currently can't do this. But when it can it will need to be based on Ability API
         return null;
     }
 
     @Override
     public boolean chooseCardsPile(SpellAbility sa, CardCollectionView pile1, CardCollectionView pile2, String faceUp) {
+        System.out.println("Function: chooseCardsPile");
 //        if (faceUp.equals("True")) {
 //            // AI will choose the first pile if it is larger or the same
 //            // TODO Improve this to be slightly more random to not be so predictable
@@ -1327,6 +1362,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Map<Card, ManaCostShard> chooseCardsForConvokeOrImprovise(SpellAbility sa, ManaCost manaCost, CardCollectionView untappedCards, boolean improvise) {
+        System.out.println("Function: chooseCardsForConvokeOrImprovise");
 //        final Player ai = sa.getActivatingPlayer();
 //        final PhaseHandler ph = ai.getGame().getPhaseHandler();
 //        //Filter out mana sources that will interfere with payManaCost()
@@ -1371,6 +1407,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public String chooseCardName(SpellAbility sa, Predicate<ICardFace> cpp, String valid, String message) {
+        System.out.println("Function: chooseCardName");
 //        if (sa.hasParam("AILogic")) {
 //            CardCollectionView aiLibrary = player.getCardsIn(ZoneType.Library);
 //            CardCollectionView oppLibrary = player.getStrongestOpponent().getCardsIn(ZoneType.Library);
@@ -1436,8 +1473,9 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public List<Card> chooseCardsForZoneChange(
-	    ZoneType destination, List<ZoneType> origin, SpellAbility sa, CardCollection fetchList, int min, int max,
+            ZoneType destination, List<ZoneType> origin, SpellAbility sa, CardCollection fetchList, int min, int max,
             DelayedReveal delayedReveal, String selectPrompt, Player decider) {
+        System.out.println("Function: chooseCardsForZoneChange");
         // this isn't used
         return null;
     }
@@ -1446,7 +1484,6 @@ public class PlayerControllerGoldfisher extends PlayerController {
     public void resetAtEndOfTurn() {
         // TODO - if card memory is ever used to remember something for longer than a turn, make sure it's not reset here.
 //        getAi().getCardMemory().clearAllRemembered();
-
     }
 
     @Override
@@ -1465,6 +1502,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public String chooseCardName(SpellAbility sa, List<ICardFace> faces, String message) {
+        System.out.println("Function: chooseCardName");
 //        ApiType api = sa.getApi();
 //        if (null == api) {
 //            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
@@ -1475,6 +1513,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public Card chooseDungeon(Player ai, List<PaperCard> dungeonCards, String message) {
+        System.out.println("Function: chooseDungeon");
         // TODO: improve the conditions that define which dungeon is a viable option to choose
 //        List<String> dungeonNames = Lists.newArrayList();
 //        for (PaperCard pc : dungeonCards) {
@@ -1497,6 +1536,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public List<Card> chooseCardsForSplice(SpellAbility sa, List<Card> cards) {
+        System.out.println("Function: chooseCardsForSplice");
         // sort from best to worst
 //        CardLists.sortByCmcDesc(cards);
 //
@@ -1519,6 +1559,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public List<OptionalCostValue> chooseOptionalCosts(SpellAbility chosen, List<OptionalCostValue> optionalCostValues) {
+        System.out.println("Function: chooseOptionalCosts");
 //        List<OptionalCostValue> chosenOptCosts = Lists.newArrayList();
 //        Cost costSoFar = chosen.getPayCosts().copy();
 //
@@ -1556,6 +1597,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public int chooseNumberForKeywordCost(SpellAbility sa, Cost cost, KeywordInterface keyword, String prompt, int max) {
+        System.out.println("Function: chooseNumberForKeywordCost");
         // TODO: improve the logic depending on the keyword and the playability of the cost-modified SA (enough targets present etc.)
 //        int chosenAmount = 0;
 //
@@ -1577,6 +1619,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public CardCollection chooseCardsForEffectMultiple(Map<String, CardCollection> validMap, SpellAbility sa, String title, boolean isOptional) {
+        System.out.println("Function: chooseCardsForEffectMultiple");
 //        CardCollection choices = new CardCollection();
 //
 //        for (String mapKey: validMap.keySet()) {
