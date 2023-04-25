@@ -1740,10 +1740,27 @@ public class GoldfisherController {
 
 //            System.out.println(sa);
             Player opponent = ai.getOpponents().getFirst();
-            if (opponent.canBeTargetedBy(sa)){
+            int spellDamage = Integer.parseInt( sa.getParam("NumDmg"));
+            if(!opponent.getCreaturesInPlay().isEmpty() && spellDamage < opponent.getLife()){
+                Card creatureTarget = opponent.getCreaturesInPlay().getFirst();
+                System.out.println("Can it target creature: " + sa.canTarget(creatureTarget));
+                if(sa.canTarget(creatureTarget) && !creatureTarget.hasKeyword(Keyword.INDESTRUCTIBLE) && (Integer.parseInt( sa.getParam("NumDmg")) >= creatureTarget.getNetToughness())){
+                    x.add(opponent.getCreaturesInPlay().getFirst());
+                    System.out.println("Spell damage: " + sa.getParam("NumDmg"));
+                    System.out.println("Targeted: " + creatureTarget.getName());
+                     //&& creatureTarget.getNetToughness() <= sa.getHostCard().getDamage()
+                }
+            }
+
+            if (x.isEmpty() && sa.canTarget(opponent)){
                 x.add(opponent);
+                System.out.println("Targeted: " + opponent.getName());
             }
             sa.setTargets(x);
+        }else{
+            System.out.println("First Spell ability: " + source.getFirstSpellAbility());
+            System.out.println("Additional abilities: " + source.getAllSpellAbilities());
+
         }
 
         System.out.println(sa);

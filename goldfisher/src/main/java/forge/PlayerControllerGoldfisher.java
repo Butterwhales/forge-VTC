@@ -534,8 +534,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 //        }
 //
 //        // Default: return with the same order as was passed into this method
-//        return cards;
-        return null;
+        return cards;
     }
 
     @Override
