@@ -3,7 +3,9 @@ package forge;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.*;
+import forge.ai.ComputerUtil;
 import forge.ai.ComputerUtilCombat;
+import forge.ai.ComputerUtilMana;
 import forge.ai.ability.ProtectAi;
 import forge.card.ColorSet;
 import forge.card.ICardFace;
@@ -290,6 +292,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean confirmStaticApplication(Card hostCard, GameEntity affected, String logic, String message) {
+        System.out.println("Function: confirmStaticApplication");
         return getAi().confirmStaticApplication(hostCard, affected, logic, message);
     }
 
@@ -571,9 +574,10 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public void playSpellAbilityNoStack(SpellAbility effectSA, boolean canSetupTargets) {
         System.out.println("Function: playSpellAbilityNoStack");
+        brains.doTrigger(effectSA, canSetupTargets);
 //        if (canSetupTargets)
 //            brains.doTrigger(effectSA, true); // first parameter does not matter, since return value won't be used
-//        ComputerUtil.playNoStack(player, effectSA, getGame(), true);
+        ComputerUtil.playNoStack(player, effectSA, getGame(), true);
     }
 
     @Override
@@ -1263,7 +1267,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public void playTrigger(Card host, WrappedAbility wrapperAbility, boolean isMandatory) {
-        System.out.println("Function: ");
+        System.out.println("Function: playTrigger");
 //        if (prepareSingleSa(host, wrapperAbility, isMandatory)) {
 //            ComputerUtil.playNoStack(wrapperAbility.getActivatingPlayer(), wrapperAbility, getGame(), true);
 //        }
@@ -1354,8 +1358,8 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean payManaCost(ManaCost toPay, CostPartMana costPartMana, SpellAbility sa, String prompt /* ai needs hints as well */, ManaConversionMatrix matrix, boolean effect) {
-        // return ComputerUtilMana.payManaCost(player, sa, effect);
-        brains.tapLands(toPay);
+//        return ComputerUtilMana.payManaCost(player, sa, effect);
+        brains.tapLands(toPay, sa);
         return true;
     }
 

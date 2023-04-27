@@ -136,11 +136,25 @@ public class AttackController {
     }
 
     public final int declareAttackers(final Combat combat) {
+        CardCollection oppCreatures = defendingOpponent.getCreaturesInPlay();
+        int maxOppDef = 0;
+        int maxOppPow = 0;
+        for(Card creature : oppCreatures){
+            if (maxOppPow < creature.getCurrentPower()){
+                maxOppPow = creature.getCurrentPower();
+            }
+            if (maxOppDef < creature.getCurrentToughness()){
+                maxOppDef = creature.getCurrentToughness();
+            }
+        }
+
         CardCollection creatures = goldfisher.getCreaturesInPlay();
         for (Card creature : creatures) {
             final FCollectionView<GameEntity> defs = combat.getDefenders();
             GameEntity defender = defs.getFirst();
-            combat.addAttacker(creature, defender);
+            if (creature.getCurrentToughness() > maxOppPow && creature.getCurrentPower() >= maxOppPow){
+                combat.addAttacker(creature, defender);
+            }
         }
         return 0;
     }

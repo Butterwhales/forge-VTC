@@ -191,4 +191,28 @@ public class CardNode {
 
         return string;
     }
+    private CardNode getBestLeaf(){
+        int highestGrade = 0;
+        if (leaves.isEmpty()) {
+            return null;
+        }
+
+        CardNode bestLeaf = leaves.get(0);
+        for (CardNode leaf: leaves) {
+            if (leaf.getGrade() > highestGrade){
+                bestLeaf = leaf;
+                highestGrade = leaf.getGrade();
+            }
+        }
+        return bestLeaf;
+    }
+
+    public CardCollection getPredictedSpells(){
+        CardCollection spells = new CardCollection();
+        for (CardNode leaf: leaves) {
+            spells.add(card);
+            spells.addAll(getBestLeaf().getPredictedSpells());
+        }
+        return spells;
+    }
 }

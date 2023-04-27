@@ -2,6 +2,7 @@ package forge;
 
 import forge.ai.*;
 import forge.ai.AiProps;
+import forge.game.GameEntity;
 import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.card.CardLists;
@@ -9,8 +10,11 @@ import forge.game.combat.Combat;
 import forge.game.combat.CombatUtil;
 import forge.game.player.Player;
 import forge.game.staticability.StaticAbilityMustBlock;
+import forge.util.collect.FCollectionView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class BlockController {
@@ -61,6 +65,31 @@ public class BlockController {
         return blockers;
     }
 
+    private List<Card> sortPotentialAttackers(final Combat combat) {
+        final CardCollection sortedAttackers = new CardCollection();
+        CardCollection firstAttacker = new CardCollection();
+        final FCollectionView<GameEntity> defenders = combat.getDefenders();
+
+        // If I don't have any planeswalkers then sorting doesn't really matter
+        if (defenders.size() == 1) {
+            final CardCollection attackers = combat.getAttackersOf(defenders.get(0));
+            // Begin with the attackers that pose the biggest threat
+            ComputerUtilCard.sortByEvaluateCreature(attackers);
+            CardLists.sortByPowerDesc(attackers);
+            Collections.sort(attackers, (o1, o2) -> {
+                if (o1.hasSVar("MustBeBlocked") && !o2.hasSVar("MustBeBlocked")) {
+                    return -1;
+                }
+                if (!o1.hasSVar("MustBeBlocked") && o2.hasSVar("MustBeBlocked")) {
+                    return 1;
+                }
+                return 0;
+            });
+            return attackers;
+        }
+        return sortedAttackers;
+    }
+
     public void assignBlockersForCombat(final Combat combat) {
         assignBlockersForCombat(combat, null);
     }
@@ -70,7 +99,7 @@ public class BlockController {
         if (exludedBlockers != null && !exludedBlockers.isEmpty()) {
             possibleBlockers.removeAll(exludedBlockers);
         }
-//        attackers = sortPotentialAttackers(combat);
+        attackers = sortPotentialAttackers(combat);
         assignBlockers(combat, possibleBlockers);
     }
 
@@ -92,6 +121,7 @@ public class BlockController {
      * @param possibleBlockers list of blockers to be considered
      */
     private void assignBlockers(final Combat combat, List<Card> possibleBlockers) {
+        System.out.println("Attacking Creatures: " + attackers);
         if (attackers.isEmpty()) {
             return;
         }
@@ -126,7 +156,8 @@ public class BlockController {
 
         // When the AI holds some Fog effect, don't bother about lifeInDanger
         if (!ComputerUtil.hasAFogEffect(goldfisher, checkingOther)) {
-            lifeInDanger = ComputerUtilCombat.lifeInDanger(goldfisher, combat);
+//            lifeInDanger = ComputerUtilCombat.lifeInDanger(goldfisher, combat);
+//            if (attackers)
 //            makeTradeBlocks(combat); // choose necessary trade blocks
 
             // if life is still in danger
@@ -223,19 +254,23 @@ public class BlockController {
         final CardCollection blockersList = new CardCollection();
 
         for (final Card blocker : blockersLeft) {
-            if (CombatUtil.mustBlockAnAttacker(blocker, combat, null) ||
-                    StaticAbilityMustBlock.blocksEachCombatIfAble(blocker)) {
+//            if (CombatUtil.mustBlockAnAttacker(blocker, combat, null) ||
+//                    StaticAbilityMustBlock.blocksEachCombatIfAble(blocker)) {
                 blockersList.add(blocker);
-            }
+//            }
         }
+
+        System.out.println("Blockers List: " + blockersList);
 
         if (!blockersList.isEmpty()) {
             for (final Card attacker : attackers) {
                 List<Card> blockers = getPossibleBlockers(combat, attacker, blockersList, false);
                 for (final Card blocker : blockers) {
-                    if (CombatUtil.canBlock(attacker, blocker, combat) && blockersLeft.contains(blocker)
-                            && (CombatUtil.mustBlockAnAttacker(blocker, combat, null)
-                            || StaticAbilityMustBlock.blocksEachCombatIfAble(blocker))) {
+                    if (CombatUtil.canBlock(attacker, blocker, combat) ){
+//                            && blockersLeft.contains(blocker)
+//                            && (CombatUtil.mustBlockAnAttacker(blocker, combat, null)
+//                            || StaticAbilityMustBlock.blocksEachCombatIfAble(blocker))) {
+                        System.out.println(blocker + " blocked " + attacker);
                         combat.addBlocker(attacker, blocker);
                     }
                 }

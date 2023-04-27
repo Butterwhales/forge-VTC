@@ -1,6 +1,7 @@
 package forge;
 
 import forge.game.card.Card;
+import forge.game.card.CardCollection;
 import forge.game.card.CardCollectionView;
 import forge.game.spellability.SpellAbility;
 
@@ -47,7 +48,7 @@ public class CardTree {
         System.out.println("Mana Avail: " + manaAvail + " Enemy Health: " + enemyHealth);
         System.out.println("Tree Generation Took: " + t + " Total Roots: " + roots.size() + " Total Leaves: " + totalLeaves);
         System.out.println("Roots " + roots.size() + ": ");
-        for (CardNode root:roots) {
+        for (CardNode root : roots) {
             System.out.println(root);
         }
         System.out.println();
@@ -137,6 +138,13 @@ public class CardTree {
     }
 
     public Card getBestCard() {
+        CardNode bestRoot = getBestRoot();
+        if (bestRoot == null)
+            return null;
+        return bestRoot.card;
+    }
+
+    private CardNode getBestRoot() {
         int highestGrade = 0;
         if (roots.isEmpty()) {
             return null;
@@ -151,8 +159,7 @@ public class CardTree {
                 highestGrade = root.getGrade();
             }
         }
-
-        return bestRoot.card;
+        return bestRoot;
     }
 
     @Override
@@ -169,5 +176,13 @@ public class CardTree {
         string = string.concat("}");
 
         return string;
+    }
+
+    public CardCollection getPredictedSpells() {
+        CardNode bestRoot = getBestRoot();
+        if (bestRoot != null){
+            return bestRoot.getPredictedSpells();
+        }
+        return null;
     }
 }

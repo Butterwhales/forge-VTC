@@ -124,6 +124,8 @@ public class PlayerControllerAi extends PlayerController {
     public boolean isAI() {
         return true;
     }
+    @Override
+    public boolean isGoldfisher() {return true;}
 
     @Override
     public List<PaperCard> sideboard(Deck deck, GameType gameType, String message) {

@@ -366,7 +366,7 @@ public class AiCardMemory {
         return aic.getCardMemory().isRememberedCardByName(name, set);
     }
     public static void clearMemorySet(Player ai, MemorySet set) {
-        if (!ai.getController().isAI()) {
+        if (!ai.getController().isAI() || !ai.getController().isGoldfisher()) {
             return;
         }
         ((PlayerControllerAi)ai.getController()).getAi().getCardMemory().clearMemorySet(set);
@@ -377,7 +377,7 @@ public class AiCardMemory {
         }
     }
     public static boolean isMemorySetEmpty(Player ai, MemorySet set) {
-        if (!ai.getController().isAI()) {
+        if (!ai.getController().isAI() || !ai.getController().isGoldfisher()) {
             return false;
         }
         return ((PlayerControllerAi)ai.getController()).getAi().getCardMemory().isMemorySetEmpty(set);

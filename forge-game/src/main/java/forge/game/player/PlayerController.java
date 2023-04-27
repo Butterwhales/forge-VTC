@@ -90,6 +90,7 @@ public abstract class PlayerController {
     public boolean isAI() {
         return false;
     }
+    public boolean isGoldfisher() {return false;}
 
     public Game getGame() { return gameView.getGame(); }
     public Match getMatch() { return gameView.getMatch(); }

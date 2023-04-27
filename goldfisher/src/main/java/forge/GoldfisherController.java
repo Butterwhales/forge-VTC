@@ -61,6 +61,7 @@ import forge.util.MyRandom;
 import forge.util.collect.FCollectionView;
 import io.sentry.Sentry;
 
+import javax.sound.midi.Soundbank;
 import java.util.*;
 
 /**
@@ -77,6 +78,7 @@ public class GoldfisherController {
     //    private final AiCardMemory memory;
     private Combat predictedCombat;
     private Combat predictedCombatNextTurn;
+    private CardCollection predictedSpells;
     private boolean cheatShuffle;
     private boolean useSimulation;
     private SpellAbilityPicker simPicker;
@@ -1651,7 +1653,6 @@ public class GoldfisherController {
         //
 
 
-
         if (!CombatUtil.validateAttackers(combat)) {
             combat.clearAttackers();
             final Map<Card, GameEntity> legal = combat.getAttackConstraints().getLegalAttackers().getLeft();
@@ -1681,24 +1682,36 @@ public class GoldfisherController {
     /**
      * This is where we essentially do everything. A lot of this code should be removed in the final version because it is not ours and is probably not needed.
      *
-     * @param ai
+     * @param goldfish
      * @param sa
      * @param game
      * @param chooseTargets
      * @return
      */
-    public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game, Runnable chooseTargets) {
+    public boolean handlePlayingSpellAbility(final Player goldfish, SpellAbility sa, final Game game, Runnable chooseTargets) {
         game.getStack().freezeStack();
         final Card source = sa.getHostCard();
         source.setSplitStateToPlayAbility(sa);
 
+        if (sa.isSpell()){
+            for (Card creature: goldfish.getCreaturesInPlay()) {
+                if (creature.hasKeyword(Keyword.PROWESS)){
+                    for (SpellAbility creatureSa: creature.getAllSpellAbilities()) {
+//                        creatureSa.sa
+                    }
+//                    creature.addPTBoost(1,1, game.getNextTimestamp(),0);
+//                    game.getEndOfTurn().addUntil(goldfish, );
+                }
+            }
+        }
+
         if (sa.isSpell() && !source.isCopiedSpell()) {
             sa = AbilityUtils.addSpliceEffects(sa);
-            if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty() && ai.getController().isAI()) {
+            if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty() && goldfish.getController().isAI()) {
                 // we need to reconsider and retarget the SA after additional SAs have been added onto it via splice,
                 // otherwise the AI will fail to add the card to stack and that'll knock it out of the game
                 sa.resetTargets();
-                if (((PlayerControllerAi) ai.getController()).getAi().canPlaySa(sa) != AiPlayDecision.WillPlay) {
+                if (((PlayerControllerAi) goldfish.getController()).getAi().canPlaySa(sa) != AiPlayDecision.WillPlay) {
                     // for whatever reason the AI doesn't want to play the thing with the spliced subs anymore,
                     // proceeding past this point may result in an illegal play
                     return false;
@@ -1732,32 +1745,69 @@ public class GoldfisherController {
 
         //sa.set
 //        System.out.println(sa);
-       // System.out.println(sa.findSubAbilityByType());
+        // System.out.println(sa.findSubAbilityByType());
         //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
         // I think I need to figure out how to make the initial ability have a target of "each player"
         if (sa.usesTargeting()) {
+            int predictedDamage = 0;
+            int spellDamage = Integer.parseInt(sa.getParam("NumDmg"));
+            predictedDamage += spellDamage;
+            for (Card futureSpell : predictedSpells) {
+                for (SpellAbility futureSa : futureSpell.getAllSpellAbilities()) {
+                    try {
+                        predictedDamage += Integer.parseInt(futureSa.getParam("NumDmg"));
+                    } catch (NumberFormatException ignored){
 
-//            System.out.println(sa);
-            Player opponent = ai.getOpponents().getFirst();
-            int spellDamage = Integer.parseInt( sa.getParam("NumDmg"));
-            if(!opponent.getCreaturesInPlay().isEmpty() && spellDamage < opponent.getLife()){
-                Card creatureTarget = opponent.getCreaturesInPlay().getFirst();
-                System.out.println("Can it target creature: " + sa.canTarget(creatureTarget));
-                if(sa.canTarget(creatureTarget) && !creatureTarget.hasKeyword(Keyword.INDESTRUCTIBLE) && (Integer.parseInt( sa.getParam("NumDmg")) >= creatureTarget.getNetToughness())){
-                    x.add(opponent.getCreaturesInPlay().getFirst());
-                    System.out.println("Spell damage: " + sa.getParam("NumDmg"));
-                    System.out.println("Targeted: " + creatureTarget.getName());
-                     //&& creatureTarget.getNetToughness() <= sa.getHostCard().getDamage()
+                    }
                 }
             }
 
-            if (x.isEmpty() && sa.canTarget(opponent)){
+            Player opponent = goldfish.getOpponents().getFirst();
+
+            if (!opponent.getCreaturesInPlay().isEmpty() && predictedDamage < opponent.getLife()) {
+                CardCollection creatureTargets = opponent.getCreaturesInPlay();
+                Collections.sort(creatureTargets, (o1, o2) -> {
+                    if (o1.getNetToughness() < o2.getNetToughness())
+                        return 1;
+                    return 0;
+                });
+                System.out.println("Targets in order largest to smallest: " + creatureTargets);
+                System.out.println("Predicted Damage " + predictedDamage);
+                for (Card creatureTarget : creatureTargets) {
+                    System.out.println("Can it target creature: " + sa.canTarget(creatureTarget));
+                    if (sa.canTarget(creatureTarget) && !creatureTarget.hasKeyword(Keyword.INDESTRUCTIBLE)
+                            && !creatureTarget.hasKeyword(Keyword.WARD)
+                            && !creatureTarget.hasKeyword(Keyword.PROTECTION)
+                            && creatureTarget.getAssignedDamage() <= creatureTarget.getNetToughness()) {
+                        if (spellDamage < creatureTarget.getNetToughness()) {
+                            int stackDamage = 0;
+                            for (Card cardOnStack: goldfish.getCardsIn(ZoneType.Stack)){
+                                for (SpellAbility stackSa : cardOnStack.getAllSpellAbilities()) {
+                                    stackDamage += Integer.parseInt(stackSa.getParam("NumDmg"));
+                                }
+                            }
+                            System.out.println("Stack Damage: " + stackDamage);
+                            if (predictedDamage < creatureTarget.getNetToughness() || stackDamage < creatureTarget.getNetToughness()) {
+                                continue;
+                            }
+                        }
+
+                        x.add(creatureTarget);
+                        System.out.println("Spell damage: " + sa.getParam("NumDmg"));
+                        System.out.println("Assigned Damage: " + creatureTarget.getAssignedDamage());
+                        System.out.println("Targeted: " + creatureTarget.getName() + " [" + creatureTarget.getNetPower() + "/" + creatureTarget.getNetToughness() + "]");
+                        break;
+                    }
+                }
+            }
+
+            if (x.isEmpty() && sa.canTarget(opponent)) {
                 x.add(opponent);
                 System.out.println("Targeted: " + opponent.getName());
             }
             sa.setTargets(x);
-        }else{
+        } else {
             System.out.println("First Spell ability: " + source.getFirstSpellAbility());
             System.out.println("Additional abilities: " + source.getAllSpellAbilities());
 
@@ -1783,16 +1833,16 @@ public class GoldfisherController {
         // TODO: update mana color conversion for Daxos of Meletis
         //TODO: Replace this function with our own
         if (cost == null) {
-            if (ComputerUtilMana.payManaCost(ai, sa, false)) {
+            if (ComputerUtilMana.payManaCost(goldfish, sa, false)) {
                 game.getStack().addAndUnfreeze(sa);
                 return true;
             }
         } else {
             final CostPayment pay = new CostPayment(cost, sa);
-            if (pay.payComputerCosts(new AiCostDecision(ai, sa, false))) {
+            if (pay.payComputerCosts(new AiCostDecision(goldfish, sa, false))) {
                 game.getStack().addAndUnfreeze(sa);
                 if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty()) {
-                    game.getAction().reveal(sa.getSplicedCards(), ai, true, "Computer reveals spliced cards from ");
+                    game.getAction().reveal(sa.getSplicedCards(), goldfish, true, "Computer reveals spliced cards from ");
                 }
                 return true;
             }
@@ -1804,11 +1854,12 @@ public class GoldfisherController {
 
     /**
      * Creates a CardCollection containing all the untapped lands on the battlefield under the players control.
+     *
      * @return a CardCollection containing only the players untapped lands.
      */
-    public CardCollection getUntappedLands(){
+    public CardCollection getUntappedLands() {
         CardCollection untappedLands = new CardCollection();
-        for(Card c:CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)){
+        for (Card c : CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)) {
             if (!c.isTapped()) {
                 untappedLands.add(c);
             }
@@ -1816,23 +1867,23 @@ public class GoldfisherController {
         return untappedLands;
     }
 
-    public boolean tapLands(ManaCost cost) {
+    public boolean tapLands(ManaCost cost, SpellAbility sa) {
         CardCollection untappedLands;
         untappedLands = getUntappedLands();
         Iterator<Card> iter = untappedLands.iterator();
         int cmc = cost.getCMC();
-        if (cmc > untappedLands.size()){
+        if (cmc > untappedLands.size()) {
             return false;
         }
 
-        while (cmc > 0 && iter.hasNext()){
+        while (cmc > 0 && iter.hasNext()) {
             Card land = iter.next();
             land.tap(true);
-            for (SpellAbility la: land.getAllPossibleAbilities(player, true)) {
+            for (SpellAbility la : land.getAllPossibleAbilities(player, true)) {
                 land.addAbilityActivated(la);
 //                la.check
             }
-            cmc --;
+            cmc--;
         }
 
         return true;
@@ -1968,20 +2019,19 @@ public class GoldfisherController {
         cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery(), player.getOpponentsGreatestLifeTotal());
 
 
-
-
         //Gets the Next Spell/Land to play
         Card cardToPlay = cardTree.getBestCard();
+        predictedSpells = cardTree.getPredictedSpells();
         cardTree.empty();
 
         if (cardToPlay == null)
             return null;
 
-        System.out.println("Card to play: "+ cardToPlay.getName() + " CMC: " + cardToPlay.getCMC());
+        System.out.println("Card to play: " + cardToPlay.getName() + " CMC: " + cardToPlay.getCMC());
 
         //Choose best land ability
         List<SpellAbility> abilities = Lists.newArrayList();
-        if (cardToPlay.isLand()){
+        if (cardToPlay.isLand()) {
             LandAbility la = new LandAbility(cardToPlay, player, null);
             la.setCardState(cardToPlay.getCurrentState());
             if (la.canPlay()) {
@@ -2003,9 +2053,9 @@ public class GoldfisherController {
 
         abilities.addAll(cardToPlay.getAllPossibleAbilities(player, true));
 //        System.out.println(abilities);
-        if (abilities.isEmpty()){
+        if (abilities.isEmpty()) {
             return null;
-        }else {
+        } else {
             return singleSpellAbilityList(abilities.get(0));
         }
 
@@ -2337,13 +2387,16 @@ public class GoldfisherController {
     public boolean doTrigger(SpellAbility spell, boolean mandatory) {
         if (spell instanceof WrappedAbility)
             return doTrigger(((WrappedAbility) spell).getWrappedAbility(), mandatory);
-        if (spell.getApi() != null)
-//            return SpellApiToAi.Converter.get(spell.getApi()).doTriggerAI(player, spell, mandatory);
-            return false;
+        if (spell.getApi() != null) {
+            System.out.println("Function: doTrigger (GoldfishController)");
+            return SpellApiToAi.Converter.get(spell.getApi()).doTriggerAI(player, spell, mandatory);
+//            return false;
+        }
         if (spell.getPayCosts() == Cost.Zero && !spell.usesTargeting()) {
-            // For non-converted triggers (such as Cumulative Upkeep) that don't have costs or targets to worry about
+//             For non-converted triggers (such as Cumulative Upkeep) that don't have costs or targets to worry about
             return true;
         }
+
         return false;
     }
 
