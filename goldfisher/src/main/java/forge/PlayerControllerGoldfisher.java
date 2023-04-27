@@ -1222,7 +1222,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
         for (final SpellAbility sa : getAi().orderPlaySa(activePlayerSAs)) {
             if (sa.isTrigger()) {
                 if (prepareSingleSa(sa.getHostCard(), sa, true)) {
-//                    ComputerUtil.playStack(sa, player, getGame());
+                    ComputerUtil.playStack(sa, player, getGame());
                 }
                 return;
             } else {
@@ -1268,9 +1268,9 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public void playTrigger(Card host, WrappedAbility wrapperAbility, boolean isMandatory) {
         System.out.println("Function: playTrigger");
-//        if (prepareSingleSa(host, wrapperAbility, isMandatory)) {
-//            ComputerUtil.playNoStack(wrapperAbility.getActivatingPlayer(), wrapperAbility, getGame(), true);
-//        }
+        if (prepareSingleSa(host, wrapperAbility, isMandatory)) {
+            ComputerUtil.playNoStack(wrapperAbility.getActivatingPlayer(), wrapperAbility, getGame(), true);
+        }
     }
 
     @Override

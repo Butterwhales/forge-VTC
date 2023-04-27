@@ -51,6 +51,8 @@ import forge.game.player.PlayerCollection;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.replacement.ReplacementType;
 import forge.game.spellability.*;
+import forge.game.trigger.Trigger;
+import forge.game.trigger.TriggerType;
 import forge.game.trigger.WrappedAbility;
 import forge.game.zone.ZoneType;
 import forge.item.PaperCard;
@@ -1693,18 +1695,6 @@ public class GoldfisherController {
         final Card source = sa.getHostCard();
         source.setSplitStateToPlayAbility(sa);
 
-        if (sa.isSpell()){
-            for (Card creature: goldfish.getCreaturesInPlay()) {
-                if (creature.hasKeyword(Keyword.PROWESS)){
-                    for (SpellAbility creatureSa: creature.getAllSpellAbilities()) {
-//                        creatureSa.sa
-                    }
-//                    creature.addPTBoost(1,1, game.getNextTimestamp(),0);
-//                    game.getEndOfTurn().addUntil(goldfish, );
-                }
-            }
-        }
-
         if (sa.isSpell() && !source.isCopiedSpell()) {
             sa = AbilityUtils.addSpliceEffects(sa);
             if (sa.getSplicedCards() != null && !sa.getSplicedCards().isEmpty() && goldfish.getController().isAI()) {
@@ -1757,7 +1747,7 @@ public class GoldfisherController {
                 for (SpellAbility futureSa : futureSpell.getAllSpellAbilities()) {
                     try {
                         predictedDamage += Integer.parseInt(futureSa.getParam("NumDmg"));
-                    } catch (NumberFormatException ignored){
+                    } catch (NumberFormatException ignored) {
 
                     }
                 }
@@ -1782,7 +1772,7 @@ public class GoldfisherController {
                             && creatureTarget.getAssignedDamage() <= creatureTarget.getNetToughness()) {
                         if (spellDamage < creatureTarget.getNetToughness()) {
                             int stackDamage = 0;
-                            for (Card cardOnStack: goldfish.getCardsIn(ZoneType.Stack)){
+                            for (Card cardOnStack : goldfish.getCardsIn(ZoneType.Stack)) {
                                 for (SpellAbility stackSa : cardOnStack.getAllSpellAbilities()) {
                                     stackDamage += Integer.parseInt(stackSa.getParam("NumDmg"));
                                 }
@@ -1807,6 +1797,8 @@ public class GoldfisherController {
                 System.out.println("Targeted: " + opponent.getName());
             }
             sa.setTargets(x);
+
+            sa.setHostCard(game.getAction().moveToStack(source, sa));
         } else {
             System.out.println("First Spell ability: " + source.getFirstSpellAbility());
             System.out.println("Additional abilities: " + source.getAllSpellAbilities());
@@ -2574,7 +2566,8 @@ public class GoldfisherController {
         throw new UnsupportedOperationException("AI is not supposed to reach this code at the moment");
     }
 
-    public CardCollection chooseCardsForEffect(CardCollectionView pool, SpellAbility sa, int min, int max, boolean isOptional, Map<String, Object> params) {
+    public CardCollection chooseCardsForEffect(CardCollectionView pool, SpellAbility sa, int min, int max,
+                                               boolean isOptional, Map<String, Object> params) {
         if (sa == null || sa.getApi() == null) {
             throw new UnsupportedOperationException();
         }
@@ -2876,14 +2869,16 @@ public class GoldfisherController {
         return filterList(list, CardTraitPredicates.hasParam("AiLogic", logic));
     }
 
-    public List<AbilitySub> chooseModeForAbility(SpellAbility sa, List<AbilitySub> possible, int min, int num, boolean allowRepeat) {
+    public List<AbilitySub> chooseModeForAbility(SpellAbility sa, List<AbilitySub> possible, int min, int num,
+                                                 boolean allowRepeat) {
         if (simPicker != null) {
             return simPicker.chooseModeForAbility(sa, possible, min, num, allowRepeat);
         }
         return null;
     }
 
-    public CardCollectionView chooseSacrificeType(String type, SpellAbility ability, boolean effect, int amount, final CardCollectionView exclude) {
+    public CardCollectionView chooseSacrificeType(String type, SpellAbility ability, boolean effect, int amount,
+                                                  final CardCollectionView exclude) {
         if (simPicker != null) {
             return simPicker.chooseSacrificeType(type, ability, effect, amount, exclude);
         }
