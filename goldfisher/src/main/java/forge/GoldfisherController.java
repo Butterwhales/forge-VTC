@@ -17,7 +17,6 @@
  */
 package forge;
 
-import com.esotericsoftware.minlog.Log;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
@@ -29,11 +28,9 @@ import forge.ai.ability.LearnAi;
 import forge.ai.simulation.SpellAbilityPicker;
 import forge.card.CardStateName;
 import forge.card.mana.ManaCost;
-import forge.card.mana.ManaCostShard;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.game.*;
-import forge.game.ability.AbilityKey;
 import forge.game.ability.AbilityUtils;
 import forge.game.ability.ApiType;
 import forge.game.ability.effects.CharmEffect;
@@ -44,15 +41,15 @@ import forge.game.combat.Combat;
 import forge.game.combat.CombatUtil;
 import forge.game.cost.*;
 import forge.game.keyword.Keyword;
+import forge.game.mana.Mana;
+import forge.game.mana.ManaCostBeingPaid;
+import forge.game.mana.ManaPool;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.player.PlayerActionConfirmMode;
-import forge.game.player.PlayerCollection;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.replacement.ReplacementType;
 import forge.game.spellability.*;
-import forge.game.trigger.Trigger;
-import forge.game.trigger.TriggerType;
 import forge.game.trigger.WrappedAbility;
 import forge.game.zone.ZoneType;
 import forge.item.PaperCard;
@@ -60,10 +57,8 @@ import forge.util.Aggregates;
 import forge.util.ComparatorUtil;
 import forge.util.Expressions;
 import forge.util.MyRandom;
-import forge.util.collect.FCollectionView;
 import io.sentry.Sentry;
 
-import javax.sound.midi.Soundbank;
 import java.util.*;
 
 /**
@@ -1675,6 +1670,28 @@ public class GoldfisherController {
         }
     }
 
+    public boolean handlePlayingSpellAbilityWithoutPayingManaCost(final Player goldfish, SpellAbility sa, final Game game) {
+        game.getStack().freezeStack();
+        final Card source = sa.getHostCard();
+        source.setSplitStateToPlayAbility(sa);
+        sa.setActivatingPlayer(goldfish);
+
+        TargetChoices x = new TargetChoices();
+
+        if (sa.usesTargeting()) {
+            x.add(chooseSpellTargets(sa, goldfish));
+            sa.setTargets(x);
+            sa.setHostCard(game.getAction().moveToStack(source, sa));
+        } else {
+            Debugger.log("First Spell ability: " + source.getFirstSpellAbility());
+            Debugger.log("Additional abilities: " + source.getAllSpellAbilities());
+        }
+
+        Debugger.log(sa);
+        game.getStack().addAndUnfreeze(sa);
+        return true;
+    }
+
     //Todo: Implement handlePlayingSpellAbility. This came from ComputerUtil so any methods in here are from there
     public boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, final Game game) {
         return handlePlayingSpellAbility(ai, sa, game, null);
@@ -1694,6 +1711,7 @@ public class GoldfisherController {
         game.getStack().freezeStack();
         final Card source = sa.getHostCard();
         source.setSplitStateToPlayAbility(sa);
+        sa.setActivatingPlayer(goldfish);
 
         if (sa.isSpell() && !source.isCopiedSpell()) {
             sa = AbilityUtils.addSpliceEffects(sa);
@@ -1739,73 +1757,18 @@ public class GoldfisherController {
         //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
         // and then "Skullcrack deals 3 damage to target player or planeswalker."
         // I think I need to figure out how to make the initial ability have a target of "each player"
+
         if (sa.usesTargeting()) {
-            int predictedDamage = 0;
-            int spellDamage = Integer.parseInt(sa.getParam("NumDmg"));
-            predictedDamage += spellDamage;
-            for (Card futureSpell : predictedSpells) {
-                for (SpellAbility futureSa : futureSpell.getAllSpellAbilities()) {
-                    try {
-                        predictedDamage += Integer.parseInt(futureSa.getParam("NumDmg"));
-                    } catch (NumberFormatException ignored) {
-
-                    }
-                }
-            }
-
-            Player opponent = goldfish.getOpponents().getFirst();
-
-            if (!opponent.getCreaturesInPlay().isEmpty() && predictedDamage < opponent.getLife()) {
-                CardCollection creatureTargets = opponent.getCreaturesInPlay();
-                Collections.sort(creatureTargets, (o1, o2) -> {
-                    if (o1.getNetToughness() < o2.getNetToughness())
-                        return 1;
-                    return 0;
-                });
-                System.out.println("Targets in order largest to smallest: " + creatureTargets);
-                System.out.println("Predicted Damage " + predictedDamage);
-                for (Card creatureTarget : creatureTargets) {
-                    System.out.println("Can it target creature: " + sa.canTarget(creatureTarget));
-                    if (sa.canTarget(creatureTarget) && !creatureTarget.hasKeyword(Keyword.INDESTRUCTIBLE)
-                            && !creatureTarget.hasKeyword(Keyword.WARD)
-                            && !creatureTarget.hasKeyword(Keyword.PROTECTION)
-                            && creatureTarget.getAssignedDamage() <= creatureTarget.getNetToughness()) {
-                        if (spellDamage < creatureTarget.getNetToughness()) {
-                            int stackDamage = 0;
-                            for (Card cardOnStack : goldfish.getCardsIn(ZoneType.Stack)) {
-                                for (SpellAbility stackSa : cardOnStack.getAllSpellAbilities()) {
-                                    stackDamage += Integer.parseInt(stackSa.getParam("NumDmg"));
-                                }
-                            }
-                            System.out.println("Stack Damage: " + stackDamage);
-                            if (predictedDamage < creatureTarget.getNetToughness() || stackDamage < creatureTarget.getNetToughness()) {
-                                continue;
-                            }
-                        }
-
-                        x.add(creatureTarget);
-                        System.out.println("Spell damage: " + sa.getParam("NumDmg"));
-                        System.out.println("Assigned Damage: " + creatureTarget.getAssignedDamage());
-                        System.out.println("Targeted: " + creatureTarget.getName() + " [" + creatureTarget.getNetPower() + "/" + creatureTarget.getNetToughness() + "]");
-                        break;
-                    }
-                }
-            }
-
-            if (x.isEmpty() && sa.canTarget(opponent)) {
-                x.add(opponent);
-                System.out.println("Targeted: " + opponent.getName());
-            }
+            x.add(chooseSpellTargets(sa, goldfish));
             sa.setTargets(x);
-
             sa.setHostCard(game.getAction().moveToStack(source, sa));
+            sa.setActivatingPlayer(goldfish);
         } else {
-            System.out.println("First Spell ability: " + source.getFirstSpellAbility());
-            System.out.println("Additional abilities: " + source.getAllSpellAbilities());
-
+            Debugger.log("First Spell ability: " + source.getFirstSpellAbility());
+            Debugger.log("Additional abilities: " + source.getAllSpellAbilities());
         }
 
-        System.out.println(sa);
+        Debugger.log(sa);
 
 
         final Cost cost = sa.getPayCosts();
@@ -1844,6 +1807,119 @@ public class GoldfisherController {
         return false;
     }
 
+    public GameEntity chooseSpellTargets(SpellAbility sa, Player goldfish) {
+        Card source = sa.getHostCard();
+
+
+        //sa.set
+//        System.out.println(sa);
+        // System.out.println(sa.findSubAbilityByType());
+        //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
+        // and then "Skullcrack deals 3 damage to target player or planeswalker."
+        // I think I need to figure out how to make the initial ability have a target of "each player"
+        int predictedDamage = 0;
+        int spellDamage = 0;
+        try {
+            spellDamage = Integer.parseInt(sa.getParam("NumDmg"));
+        } catch (NumberFormatException ignored) {
+            spellDamage = 3;
+        }
+
+        predictedDamage += spellDamage;
+        if (predictedSpells != null) {
+            for (Card futureSpell : predictedSpells) {
+                for (SpellAbility futureSa : futureSpell.getAllSpellAbilities()) {
+                    try {
+                        predictedDamage += Integer.parseInt(futureSa.getParam("NumDmg"));
+                    } catch (NumberFormatException ignored) {
+
+                    }
+                }
+            }
+        }
+
+        Player opponent = goldfish.getOpponents().getFirst();
+
+        if (!opponent.getCreaturesInPlay().isEmpty() && predictedDamage < opponent.getLife()) {
+            CardCollection creatureTargets = opponent.getCreaturesInPlay();
+            Collections.sort(creatureTargets, (o1, o2) -> {
+                if (o1.getNetToughness() < o2.getNetToughness())
+                    return 1;
+                return 0;
+            });
+            Debugger.log("Targets in order largest to smallest: " + creatureTargets);
+            Debugger.log("Predicted Damage " + predictedDamage);
+
+            boolean ensnare = false;
+
+
+            for (Card card : player.getCardsIn(ZoneType.Battlefield)) {
+                if (card.isArtifact()) {
+                    if (Objects.equals(card.getName(), "Ensnaring Bridge")){
+                        ensnare = true;
+                        break;
+                    }
+                }
+            }
+
+            if (ensnare){
+                for (Card card : player.getCardsIn(ZoneType.Battlefield)) {
+                    if (card.isCreature()){
+                        if (Objects.equals(card.getName(), "Eidolon of the Great Revel")){
+                            if (sa.canTarget(card)) {
+                                Debugger.log("Targeted: " + card.getName());
+                                return card;
+                            }
+                        }
+                    }
+                }
+
+                if (sa.canTarget(opponent)) {
+                    Debugger.log("Targeted: " + opponent.getName());
+                    return opponent;
+                }
+            }
+
+            for (Card creatureTarget : creatureTargets) {
+                Debugger.log("Can it target creature: " + sa.canTarget(creatureTarget));
+                if (sa.canTarget(creatureTarget) && !creatureTarget.hasKeyword(Keyword.INDESTRUCTIBLE)
+                        && !creatureTarget.hasKeyword(Keyword.WARD)
+                        && !creatureTarget.hasKeyword(Keyword.PROTECTION)
+                        && creatureTarget.getAssignedDamage() <= creatureTarget.getNetToughness()
+                ) {
+                    if (spellDamage < creatureTarget.getNetToughness()) {
+                        int stackDamage = 0;
+                        for (Card cardOnStack : goldfish.getCardsIn(ZoneType.Stack)) {
+                            for (SpellAbility stackSa : cardOnStack.getAllSpellAbilities()) {
+                                try {
+                                    stackDamage += Integer.parseInt(stackSa.getParam("NumDmg"));
+                                } catch (NumberFormatException ignored) {
+
+                                }
+                            }
+                        }
+                        Debugger.log("Stack Damage: " + stackDamage);
+                        if (predictedDamage < creatureTarget.getNetToughness() || stackDamage < creatureTarget.getNetToughness()) {
+                            continue;
+                        }
+                    }
+
+
+                    Debugger.log("Spell damage: " + sa.getParam("NumDmg"));
+                    Debugger.log("Assigned Damage: " + creatureTarget.getAssignedDamage());
+                    Debugger.log("Targeted: " + creatureTarget.getName() + " [" + creatureTarget.getNetPower() + "/" + creatureTarget.getNetToughness() + "]");
+                    return creatureTarget;
+                }
+            }
+        }
+
+        if (sa.canTarget(opponent)) {
+            Debugger.log("Targeted: " + opponent.getName());
+            return opponent;
+        }
+        return null;
+    }
+
     /**
      * Creates a CardCollection containing all the untapped lands on the battlefield under the players control.
      *
@@ -1853,17 +1929,32 @@ public class GoldfisherController {
         CardCollection untappedLands = new CardCollection();
         for (Card c : CardLists.filter(player.getCardsIn(ZoneType.Battlefield), Presets.LANDS)) {
             if (!c.isTapped()) {
+
                 untappedLands.add(c);
             }
         }
         return untappedLands;
     }
 
-    public boolean tapLands(ManaCost cost, SpellAbility sa) {
+    public boolean tapLands(ManaCost cost, SpellAbility sa, boolean test) {
+        System.out.println("Mana Cost: " + cost.getCMC());
         CardCollection untappedLands;
         untappedLands = getUntappedLands();
         Iterator<Card> iter = untappedLands.iterator();
+
+        ManaCostBeingPaid manaCost = ComputerUtilMana.calculateManaCost(sa, test, 0);
+        List<Mana> manaSpentToPay = test ? new ArrayList<>() : sa.getPayingMana();
+        List<SpellAbility> paymentList = Lists.newArrayList();
+
+        if (ManaPool.payManaCostFromPool(manaCost, sa, player, test, manaSpentToPay)) {
+            return true;    // paid all from floating mana
+        }
+
+        ManaPool pool = player.getManaPool();
+
+        List<Mana> manaSpent = new ArrayList<>();
         int cmc = cost.getCMC();
+
         if (cmc > untappedLands.size()) {
             return false;
         }
@@ -1871,12 +1962,20 @@ public class GoldfisherController {
         while (cmc > 0 && iter.hasNext()) {
             Card land = iter.next();
             land.tap(true);
-            for (SpellAbility la : land.getAllPossibleAbilities(player, true)) {
+            for (SpellAbility la : land.getManaAbilities()) {
+                la.setActivatingPlayer(la.getHostCard().getController());
                 land.addAbilityActivated(la);
-//                la.check
+                pool.add(la.getPayingMana());
+                break;
             }
+            ManaPool.payManaCostFromPool(manaCost, sa, player, true, sa.getPayingMana());
             cmc--;
+            if (manaCost.isPaid()) {
+                System.out.println("Mana paid :)");
+                break;
+            }
         }
+
 
         return true;
     }
@@ -1981,7 +2080,7 @@ public class GoldfisherController {
         CardCollectionView cardsInHand = player.getCardsIn(ZoneType.Hand);
 
 //        CardCollection cards = getAvailableCards(game, player);
-//        System.out.println(cardsInHand);
+//        Debugger.log(cardsInHand);
 
         //Gets the available mana to use
         CardCollection landsOnField;
@@ -1993,6 +2092,7 @@ public class GoldfisherController {
                 continue;
             }
             for (SpellAbility ability : card.getManaAbilities()) {
+                ability.setActivatingPlayer(player);
                 int newMana = ability.amountOfManaGenerated(false);
                 if (manaGenerated <= newMana) {
                     totalManaAvail += newMana;
@@ -2000,15 +2100,25 @@ public class GoldfisherController {
             }
         }
 
+        boolean ensnare = false;
+
+        for (Card card: player.getCardsIn(ZoneType.Battlefield)) {
+            if (card.isArtifact()) {
+                if (Objects.equals(card.getName(), "Ensnaring Bridge")){
+                    ensnare = true;
+                }
+            }
+        }
+
         //Generates the tree of moves
         CardTree cardTree = new CardTree();
 
-        System.out.println("-------------------------------------------------------------------------------------------------");
-        System.out.println("Turn: " + game.getPhaseHandler().getTurn() + " " + game.getPhaseHandler().getPlayerTurn() + " " + game.getPhaseHandler().getPhase());
+        Debugger.log("-------------------------------------------------------------------------------------------------");
+        Debugger.log("Turn: " + game.getPhaseHandler().getTurn() + " " + game.getPhaseHandler().getPlayerTurn() + " " + game.getPhaseHandler().getPhase());
 
         if (game.getPhaseHandler().getPhase().isBefore(PhaseType.MAIN1))
             return null;
-        cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery(), player.getOpponentsGreatestLifeTotal());
+        cardTree.generateTree(cardsInHand, totalManaAvail, player.getLandsPlayedThisTurn(), player.canCastSorcery(), player.getOpponentsGreatestLifeTotal(), player.getOpponentLostLifeThisTurn(), ensnare);
 
 
         //Gets the Next Spell/Land to play
@@ -2019,7 +2129,7 @@ public class GoldfisherController {
         if (cardToPlay == null)
             return null;
 
-        System.out.println("Card to play: " + cardToPlay.getName() + " CMC: " + cardToPlay.getCMC());
+        Debugger.log("Card to play: " + cardToPlay.getName() + " CMC: " + cardToPlay.getCMC());
 
         //Choose best land ability
         List<SpellAbility> abilities = Lists.newArrayList();
@@ -2030,11 +2140,13 @@ public class GoldfisherController {
                 abilities.add(la);
             }
 
+
             // add mayPlay option
             for (CardPlayOption o : cardToPlay.mayPlay(player)) {
                 la = new LandAbility(cardToPlay, player, o.getAbility());
                 la.setCardState(cardToPlay.getCurrentState());
                 if (la.canPlay()) {
+                    la.setActivatingPlayer(player);
                     abilities.add(la);
                 }
             }
@@ -2044,6 +2156,24 @@ public class GoldfisherController {
         }
 
         abilities.addAll(cardToPlay.getAllPossibleAbilities(player, true));
+        System.out.println("Abilities of spell: " + abilities);
+        for (SpellAbility sa : abilities) {
+            sa.setActivatingPlayer(player);
+//            System.out.println(sa.getDescription());
+            switch (cardToPlay.getName()) {
+                case "Rift Bolt":
+                    if (sa.getDescription().contains("Suspend"))
+                        return singleSpellAbilityList(sa);
+                case "Skewer the Critics":
+                    if (sa.getDescription().contains("Spectacle"))
+                        return singleSpellAbilityList(sa);
+                    else if (player.getOpponentLostLifeThisTurn() == 0) {
+                        return singleSpellAbilityList(sa);
+                    }
+            }
+        }
+
+
 //        System.out.println(abilities);
         if (abilities.isEmpty()) {
             return null;
@@ -2380,7 +2510,7 @@ public class GoldfisherController {
         if (spell instanceof WrappedAbility)
             return doTrigger(((WrappedAbility) spell).getWrappedAbility(), mandatory);
         if (spell.getApi() != null) {
-            System.out.println("Function: doTrigger (GoldfishController)");
+//            System.out.println("Function: doTrigger (GoldfishController)");
             return SpellApiToAi.Converter.get(spell.getApi()).doTriggerAI(player, spell, mandatory);
 //            return false;
         }

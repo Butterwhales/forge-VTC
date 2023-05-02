@@ -79,7 +79,7 @@ public class VLobby implements ILobbyView {
 
     private final StartButton btnStart  = new StartButton();
     private final JPanel pnlStart = new JPanel(new MigLayout("insets 0, gap 0, wrap 2"));
-    private final JComboBox gamesInMatch = new JComboBox(new String[] {"1","3","5"});
+    private final JComboBox gamesInMatch = new JComboBox(new String[] {"1","3","5","51","101"});
     private final JPanel gamesInMatchFrame = new JPanel(new MigLayout("insets 0, gap 0, wrap 2"));
     private final JPanel constructedFrame = new JPanel(new MigLayout("insets 0, gap 0, wrap 2")); // Main content frame
 

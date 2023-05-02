@@ -133,6 +133,8 @@ public abstract class LobbyScreen extends LaunchScreen implements ILobbyView {
         cbGamesInMatch.addItem("1");
         cbGamesInMatch.addItem("3");
         cbGamesInMatch.addItem("5");
+        cbGamesInMatch.addItem("50");
+        cbGamesInMatch.addItem("100");
         cbGamesInMatch.setSelectedItem(FModel.getPreferences().getPref((FPref.UI_MATCHES_PER_GAME)));
         cbGamesInMatch.setChangedHandler(event -> FModel.getPreferences().setPref(FPref.UI_MATCHES_PER_GAME, cbGamesInMatch.getSelectedItem()));
 

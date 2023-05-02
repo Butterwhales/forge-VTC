@@ -21,7 +21,7 @@ public class CardTree {
      * @param cards     - The cards that go in to the tree (The Players hand)
      * @param manaAvail - The Players available mana
      */
-    public void generateTree(CardCollectionView cards, int manaAvail, int landsPlayed, boolean canPlaySorcery, int enemyHealth) {
+    public void generateTree(CardCollectionView cards, int manaAvail, int landsPlayed, boolean canPlaySorcery, int enemyHealth, int enemyTurnDamage, boolean ensnare) {
         ExecuteTimer t = new ExecuteTimer();
         for (Card card : cards) {
             addRoot(card);
@@ -32,11 +32,12 @@ public class CardTree {
         }
 
         boolean playedLand = landsPlayed != 0 || !canPlaySorcery;
-//        System.out.println("Lands played: " + playedLand);
+//        Debugger.log("Lands played: " + playedLand);
 
-        pruneLeaves(manaAvail, playedLand, canPlaySorcery);
-
-        grade(enemyHealth);
+//        System.out.println(enemyTurnDamage);
+        fixCMC(enemyTurnDamage);
+        pruneLeaves(manaAvail, playedLand, canPlaySorcery, ensnare);
+        grade(enemyHealth, enemyTurnDamage);
         long totalLeaves = countLeaves();
 
         t.end();
@@ -45,22 +46,22 @@ public class CardTree {
             return;
 
         //Debug Prints
-        System.out.println("Mana Avail: " + manaAvail + " Enemy Health: " + enemyHealth);
-        System.out.println("Tree Generation Took: " + t + " Total Roots: " + roots.size() + " Total Leaves: " + totalLeaves);
-        System.out.println("Roots " + roots.size() + ": ");
+        Debugger.log("Mana Avail: " + manaAvail + " Enemy Health: " + enemyHealth);
+        Debugger.log("Tree Generation Took: " + t + " Total Roots: " + roots.size() + " Total Leaves: " + totalLeaves);
+        Debugger.log("Roots " + roots.size() + ": ");
         for (CardNode root : roots) {
-            System.out.println(root);
+            Debugger.log(root);
         }
-        System.out.println();
-        System.out.println("Cards " + cards.size() + ": " + cards);
+        Debugger.log("");
+        Debugger.log("Cards " + cards.size() + ": " + cards);
     }
 
     /**
      * Grades the tree
      */
-    public void grade(int enemyHealth) {
+    public void grade(int enemyHealth, int enemyTurnDamage) {
         for (CardNode root : roots) {
-            root.grade(enemyHealth);
+            root.grade(enemyHealth, enemyTurnDamage);
         }
     }
 
@@ -82,7 +83,7 @@ public class CardTree {
      *
      * @param mana - The players available mana
      */
-    public void pruneLeaves(int mana, boolean landPlayed, boolean canPlaySorcery) {
+    public void pruneLeaves(int mana, boolean landPlayed, boolean canPlaySorcery, boolean ensnare) {
         for (int i = roots.size() - 1; i >= 0; i--) {
             CardNode root = roots.get(i);
             if (root.card.isSorcery() && !canPlaySorcery) {
@@ -162,6 +163,12 @@ public class CardTree {
         return bestRoot;
     }
 
+    private void fixCMC(int enemyTurnDamage) {
+        for (CardNode root : roots) {
+            root.fixCMC(enemyTurnDamage);
+        }
+    }
+
     @Override
     public String toString() {
         String string = "RootNode { ";
@@ -180,7 +187,7 @@ public class CardTree {
 
     public CardCollection getPredictedSpells() {
         CardNode bestRoot = getBestRoot();
-        if (bestRoot != null){
+        if (bestRoot != null) {
             return bestRoot.getPredictedSpells();
         }
         return null;

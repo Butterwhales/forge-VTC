@@ -4,6 +4,7 @@ import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.card.CardLists;
 import forge.game.card.CardPredicates;
+import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class CardNode {
      * Total Damage of the branch
      */
     int totalDamage;
+    int damage;
 
     /**
      * Represents a card
@@ -41,6 +43,37 @@ public class CardNode {
         value = CardValues.getValue(key);
         leaves = new ArrayList<>();
         cmc = key.getCMC();
+        if (!card.isLand()) {
+            if (!card.isCreature()) {
+                switch (card.getName()) {
+                    case "Price of Progress":
+                        for (Card c : CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)) {
+                            if (!c.isBasicLand()) {
+                                damage += 2;
+                            }
+                        }
+                        break;
+                    case "Skewer the Critics":
+                        damage = 3;
+                        break;
+                    case "Rift Bolt":
+                        cmc = 1;
+                        damage = 3;
+                        break;
+                    default:
+                        for (SpellAbility sa : card.getAllSpellAbilities()) {
+                            try {
+                                damage += Integer.parseInt(sa.getParam("NumDmg"));
+                            } catch (NumberFormatException e) {
+                                damage = 3;
+                            }
+                        }
+
+                }
+
+            }
+
+        }
     }
 
     /**
@@ -87,29 +120,31 @@ public class CardNode {
     /**
      * Grades the tree
      */
-    public void grade(int enemyHealth) {
+    public void grade(int enemyHealth, int enemyTurnDamage) {
         int maxLeafDamage = 0;
         for (CardNode leaf : leaves) {
-            leaf.grade(enemyHealth);
+            leaf.grade(enemyHealth, enemyTurnDamage);
             maxValue += leaf.value;
-            if (leaf.totalDamage > maxLeafDamage){
+            if (leaf.totalDamage > maxLeafDamage) {
                 maxLeafDamage = leaf.totalDamage;
             }
         }
 
         if (!card.isLand()) {
-            if(!card.isCreature()){
-                if (card.getName().equals("Price of Progress")){
-                    totalDamage = 0;
-                    for(Card c: CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)){
-                        if (!c.isBasicLand()) {
-                            totalDamage += 2;
+            if (!card.isCreature()) {
+                switch (card.getName()) {
+                    case "Price of Progress":
+                        for (Card c : CardLists.filter(card.getController().getSingleOpponent().getCardsIn(ZoneType.Battlefield), CardPredicates.Presets.LANDS)) {
+                            if (!c.isBasicLand()) {
+                                damage += 2;
+                                totalDamage +=2;
+                            }
                         }
-                    }
-                } else {
-                    //card.getAllSpellAbilities();
-                    totalDamage += 3; //TODO set based on card
+                        break;
+                    default:
+                        totalDamage += damage;
                 }
+
             }
 
         }
@@ -177,9 +212,25 @@ public class CardNode {
         return maxValue;
     }
 
+    public void fixCMC(int enemyTurnDamage) {
+        switch (card.getName()) {
+            case "Skewer the Critics":
+                if (enemyTurnDamage > 0) {
+                    cmc = 1;
+                }
+                break;
+            case "Rift Bolt":
+                cmc = 1;
+                break;
+        }
+        for (CardNode leaf : leaves) {
+            leaf.fixCMC(enemyTurnDamage + damage);
+        }
+    }
+
     @Override
     public String toString() {
-        String string = card.getName() + "(" + maxValue + ", " + totalDamage + ")"+ "[ ";
+        String string = card.getName() + "(" + maxValue + ", " + totalDamage + ")" + "[ ";
         for (CardNode leaf : leaves) {
             string = string.concat(leaf.toString());
 
@@ -191,15 +242,16 @@ public class CardNode {
 
         return string;
     }
-    private CardNode getBestLeaf(){
+
+    private CardNode getBestLeaf() {
         int highestGrade = 0;
         if (leaves.isEmpty()) {
             return null;
         }
 
         CardNode bestLeaf = leaves.get(0);
-        for (CardNode leaf: leaves) {
-            if (leaf.getGrade() > highestGrade){
+        for (CardNode leaf : leaves) {
+            if (leaf.getGrade() > highestGrade) {
                 bestLeaf = leaf;
                 highestGrade = leaf.getGrade();
             }
@@ -207,12 +259,11 @@ public class CardNode {
         return bestLeaf;
     }
 
-    public CardCollection getPredictedSpells(){
+    public CardCollection getPredictedSpells() {
         CardCollection spells = new CardCollection();
-        for (CardNode leaf: leaves) {
-            spells.add(card);
+        spells.add(card);
+        if (!leaves.isEmpty())
             spells.addAll(getBestLeaf().getPredictedSpells());
-        }
         return spells;
     }
 }

@@ -121,7 +121,7 @@ public class BlockController {
      * @param possibleBlockers list of blockers to be considered
      */
     private void assignBlockers(final Combat combat, List<Card> possibleBlockers) {
-        System.out.println("Attacking Creatures: " + attackers);
+        Debugger.log("Attacking Creatures: " + attackers);
         if (attackers.isEmpty()) {
             return;
         }
@@ -260,7 +260,7 @@ public class BlockController {
 //            }
         }
 
-        System.out.println("Blockers List: " + blockersList);
+        Debugger.log("Blockers List: " + blockersList);
 
         if (!blockersList.isEmpty()) {
             for (final Card attacker : attackers) {

@@ -1,11 +1,8 @@
 package forge;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.*;
-import forge.ai.ComputerUtil;
-import forge.ai.ComputerUtilCombat;
-import forge.ai.ComputerUtilMana;
+import forge.ai.*;
 import forge.ai.ability.ProtectAi;
 import forge.card.ColorSet;
 import forge.card.ICardFace;
@@ -30,14 +27,12 @@ import forge.game.keyword.Keyword;
 import forge.game.keyword.KeywordInterface;
 import forge.game.mana.Mana;
 import forge.game.mana.ManaConversionMatrix;
-import forge.game.mana.ManaPool;
 import forge.game.phase.PhaseHandler;
 import forge.game.player.*;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.spellability.*;
 import forge.game.trigger.Trigger;
 import forge.game.trigger.WrappedAbility;
-import forge.game.zone.Zone;
 import forge.game.zone.ZoneType;
 import forge.item.PaperCard;
 import forge.util.Aggregates;
@@ -49,6 +44,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import forge.game.card.CardPredicates;
 import forge.game.card.CardPredicates.Presets;
 
+import java.security.InvalidParameterException;
 import java.util.*;
 
 
@@ -214,8 +210,32 @@ public class PlayerControllerGoldfisher extends PlayerController {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T extends GameEntity> T chooseSingleEntityForEffect(FCollectionView<T> optionList, DelayedReveal delayedReveal, SpellAbility sa, String title, boolean isOptional, Player targetedPlayer, Map<String, Object> params) {
         System.out.println("Function: chooseSingleEntityForEffect");
+
+        boolean hasPlayer = false;
+        boolean hasCard = false;
+        boolean hasPlaneswalker = false;
+
+        for (T ent : optionList) {
+            if (ent instanceof Player) {
+                hasPlayer = true;
+            } else if (ent instanceof Card) {
+                hasCard = true;
+                if (((Card)ent).isPlaneswalker()) {
+                    hasPlaneswalker = true;
+                }
+            }
+        }
+
+        if (hasPlayer){
+            return (T) player.getOpponents().getFirst();
+        } else if (hasCard) {
+            return optionList.getFirst();
+        }
+
+//        return (T)
 //        if (delayedReveal != null) {
 //            reveal(delayedReveal.getCards(), delayedReveal.getZone(), delayedReveal.getOwner(), delayedReveal.getMessagePrefix());
 //        }
@@ -223,6 +243,7 @@ public class PlayerControllerGoldfisher extends PlayerController {
 //        if (null == api) {
 //            throw new InvalidParameterException("SA is not api-based, this is not supported yet");
 //        }
+
 //        return SpellApiToAi.Converter.get(api).chooseSingleEntity(player, sa, (FCollection<T>)optionList, isOptional, targetedPlayer, params);
         return null;
     }
@@ -301,44 +322,44 @@ public class PlayerControllerGoldfisher extends PlayerController {
         System.out.println("Function: confirmTrigger");
         final SpellAbility sa = wrapper.getWrappedAbility();
         final Trigger regtrig = wrapper.getTrigger();
-//        if (ComputerUtilAbility.getAbilitySourceName(sa).equals("Deathmist Raptor")) {
-//            return true;
-//        }
+        if (ComputerUtilAbility.getAbilitySourceName(sa).equals("Deathmist Raptor")) {
+            return true;
+        }
         if (wrapper.isMandatory()) {
             return true;
         }
 //        // Store/replace target choices more properly to get this SA cleared.
-//        TargetChoices tc = null;
-//        TargetChoices subtc = null;
-//        boolean storeChoices = sa.usesTargeting();
-//        final SpellAbility sub = sa.getSubAbility();
-//        boolean storeSubChoices = sub != null && sub.usesTargeting();
-//        boolean ret = true;
-//
-//        if (storeChoices) {
-//            tc = sa.getTargets();
-//            sa.resetTargets();
-//        }
-//        if (storeSubChoices) {
-//            subtc = sub.getTargets();
-//            sub.resetTargets();
-//        }
+        TargetChoices tc = null;
+        TargetChoices subtc = null;
+        boolean storeChoices = sa.usesTargeting();
+        final SpellAbility sub = sa.getSubAbility();
+        boolean storeSubChoices = sub != null && sub.usesTargeting();
+        boolean ret = true;
+
+        if (storeChoices) {
+            tc = sa.getTargets();
+            sa.resetTargets();
+        }
+        if (storeSubChoices) {
+            subtc = sub.getTargets();
+            sub.resetTargets();
+        }
 //        // There is no way this doTrigger here will have the same target as stored above
 //        // So it's possible it's making a different decision here than will actually happen
-//        if (!brains.doTrigger(sa, false)) {
-//            ret = false;
-//        }
-//        if (storeChoices) {
-//            sa.resetTargets();
-//            sa.setTargets(tc);
-//        }
-//        if (storeSubChoices) {
-//            sub.resetTargets();
-//            sub.setTargets(subtc);
-//        }
-//
-//        return ret;
-        return true;
+        if (!brains.doTrigger(sa, false)) {
+            ret = false;
+        }
+        if (storeChoices) {
+            sa.resetTargets();
+            sa.setTargets(tc);
+        }
+        if (storeSubChoices) {
+            sub.resetTargets();
+            sub.setTargets(subtc);
+        }
+
+        return ret;
+//        return true;
     }
 
     @Override
@@ -361,8 +382,8 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public CardCollection orderBlocker(Card attacker, Card blocker, CardCollection oldBlockers) {
         System.out.println("Function: orderBlocker");
-//    	return BlockController.orderBlocker(attacker, blocker, oldBlockers);
-        return null;
+        return BlockController.orderBlocker(attacker, blocker, oldBlockers);
+//        return null;
     }
 
     @Override
@@ -385,21 +406,19 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public ImmutablePair<CardCollection, CardCollection> arrangeForScry(CardCollection topN) {
         System.out.println("Function: arrangeForScry");
-//        CardCollection toBottom = new CardCollection();
-//        CardCollection toTop = new CardCollection();
-//
-//        for (Card c: topN) {
-//            if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c)) {
-//                toBottom.add(c);
-//            } else {
-//                toTop.add(c);
-//            }
-//        }
-//
+        CardCollection toBottom = new CardCollection();
+        CardCollection toTop = new CardCollection();
+        for (Card c: topN) {
+            if (ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c)) {
+                toBottom.add(c);
+            } else {
+                toTop.add(c);
+            }
+        }
 //        // put the rest on top in random order
-//        CardLists.shuffle(toTop);
-//        return ImmutablePair.of(toTop, toBottom);
-        return null;
+        CardLists.shuffle(toTop);
+        return ImmutablePair.of(toTop, toBottom);
+//        return null;
     }
 
     /* (non-Javadoc)
@@ -436,8 +455,8 @@ public class PlayerControllerGoldfisher extends PlayerController {
         // This is used for Clash. Currently uses Scry logic to determine whether the card should be put on top.
         // Note that the AI does not know what will happen next (another clash or that would become his topdeck)
 
-//        return !ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c);
-        return false;
+        return !ComputerUtil.scryWillMoveCardToBottomOfLibrary(player, c);
+//        return false;
     }
 
     @Override
@@ -573,10 +592,10 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public void playSpellAbilityNoStack(SpellAbility effectSA, boolean canSetupTargets) {
-        System.out.println("Function: playSpellAbilityNoStack");
+//        System.out.println("Function: playSpellAbilityNoStack");
         brains.doTrigger(effectSA, canSetupTargets);
-//        if (canSetupTargets)
-//            brains.doTrigger(effectSA, true); // first parameter does not matter, since return value won't be used
+        if (canSetupTargets)
+            brains.doTrigger(effectSA, true); // first parameter does not matter, since return value won't be used
         ComputerUtil.playNoStack(player, effectSA, getGame(), true);
     }
 
@@ -626,8 +645,8 @@ public class PlayerControllerGoldfisher extends PlayerController {
     @Override
     public Object vote(SpellAbility sa, String prompt, List<Object> options, ListMultimap<Object, Player> votes, Player forPlayer) {
         System.out.println("Function: vote");
-//        return ComputerUtil.vote(player, options, sa, votes, forPlayer);
-        return null;
+        return ComputerUtil.vote(player, options, sa, votes, forPlayer);
+//        return null;
     }
 
     @Override
@@ -1282,14 +1301,15 @@ public class PlayerControllerGoldfisher extends PlayerController {
             Spell spell = (Spell) tgtSA;
             // TODO if mandatory AI is only forced to use mana when it's already in the pool
 //            if (brains.canPlayFromEffectAI(spell, !optional, noManaCost) == AiPlayDecision.WillPlay || !optional) {
-//                if (noManaCost) {
+                if (noManaCost) {
+                    return brains.handlePlayingSpellAbilityWithoutPayingManaCost(player,tgtSA, getGame());
 //                    return ComputerUtil.playSpellAbilityWithoutPayingManaCost(player, tgtSA, getGame());
-//                }
-//                return ComputerUtil.playStack(tgtSA, player, getGame());
-//            }
+                }
+                return ComputerUtil.playStack(tgtSA, player, getGame());
+            }
             return false; // didn't play spell
-        }
-        return true;
+
+//        return true;
     }
 
     @Override
@@ -1358,8 +1378,9 @@ public class PlayerControllerGoldfisher extends PlayerController {
 
     @Override
     public boolean payManaCost(ManaCost toPay, CostPartMana costPartMana, SpellAbility sa, String prompt /* ai needs hints as well */, ManaConversionMatrix matrix, boolean effect) {
-//        return ComputerUtilMana.payManaCost(player, sa, effect);
-        brains.tapLands(toPay, sa);
+        System.out.println("Function: payManaCost");
+        //        return ComputerUtilMana.payManaCost(player, sa, effect);
+        brains.tapLands(toPay, sa, true);
         return true;
     }
 

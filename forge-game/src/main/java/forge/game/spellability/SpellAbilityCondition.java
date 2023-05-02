@@ -251,6 +251,7 @@ public class SpellAbilityCondition extends SpellAbilityVariables {
             activator = sa.getHostCard().getController();
             System.out.println(sa.getHostCard().getName()
                     + " Did not have activator set in SpellAbility_Condition.checkConditions()");
+//            System.out.println(" " + sa.);
         }
         final Game game = activator.getGame();
         final PhaseHandler phase = game.getPhaseHandler();
@@ -428,7 +429,7 @@ public class SpellAbilityCondition extends SpellAbilityVariables {
         if (this.getTargetValidTargeting() != null) {
             final TargetChoices matchTgt = sa.getTargets();
             if (matchTgt == null || matchTgt.getFirstTargetedSpell() == null
-            		|| matchTgt.getFirstTargetedSpell().getTargets() == null) {
+                    || matchTgt.getFirstTargetedSpell().getTargets() == null) {
                 return false;
             }
 
@@ -454,7 +455,7 @@ public class SpellAbilityCondition extends SpellAbilityVariables {
         if (this.targetsSingleTarget()) {
             final TargetChoices matchTgt = sa.getTargets();
             if (matchTgt == null || matchTgt.getFirstTargetedSpell() == null
-            		|| matchTgt.getFirstTargetedSpell().getTargets() == null) {
+                    || matchTgt.getFirstTargetedSpell().getTargets() == null) {
                 return false;
             }
 

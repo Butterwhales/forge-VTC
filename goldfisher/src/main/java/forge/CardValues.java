@@ -6,18 +6,21 @@ public class CardValues {
 
     /**
      * The greater the value the better the card.
+     *
      * @param card card that is being valued
      * @return value of the card
      */
-    public static int getValue(Card card){
-        switch (card.getName()){
+    public static int getValue(Card card) {
+        switch (card.getName()) {
             case "Mountain":
                 return 0;
             case "Lightning Bolt":
             case "Chain Lightning": // add the ability to copy when mana is available
             case "Lava Spike":
+            case "Rift Bolt":
             case "Boil":
                 return 1;
+            case "Skewer the Critics":
             case "Skullcrack":
             case "Incendiary Flow":
             case "Price of Progress":
@@ -29,11 +32,16 @@ public class CardValues {
                 return 2;
             case "Annihilating Fire":
                 return 3;
+            case "Eidolon of the Great Revel":
+                return 5;
             case "Goblin Guide":
             case "Monastery Swiftspear":
                 return 6;
+            case "Ensnaring Bridge":
+                    return 20;
 
-            default: return -1;
+            default:
+                return -1;
         }
 
 //        switch (card.getName()){
