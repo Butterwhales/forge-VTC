@@ -473,13 +473,13 @@ public class Game {
         if (phaseHandler.getPlayerTurn() != null && phaseHandler.getPlayerTurn().getAmountOfKeyword("The turn order is reversed.") % 2 == 1) {
             return turnOrder.getOtherDirection();
         }
-    	return turnOrder;
+        return turnOrder;
     }
     public final void reverseTurnOrder() {
-    	turnOrder = turnOrder.getOtherDirection();
+        turnOrder = turnOrder.getOtherDirection();
     }
     public final void resetTurnOrder() {
-    	turnOrder = Direction.getDefaultDirection();
+        turnOrder = Direction.getDefaultDirection();
     }
 
     /**
@@ -531,6 +531,9 @@ public class Game {
 
         // The log shall listen to events and generate text internally
         if (maingame == null) {
+            for (RegisteredPlayer p: match.getPlayers()){
+                System.out.println(p.getPlayer().getName() +  " x " + Collections.frequency(match.getGamesWon(), p));
+            }
             fireEvent(new GameEventGameOutcome(result, match.getOutcomes()));
         }
     }
@@ -742,23 +745,23 @@ public class Game {
 
         final int shift = turnOrder.getShift();
         if (-1 == iPlayer) { // if playerTurn has just lost
-        	final int totalNumPlayers = allPlayers.size();
+            final int totalNumPlayers = allPlayers.size();
             int iAlive;
             iPlayer = allPlayers.indexOf(playerTurn);
             do {
                 iPlayer = (iPlayer + shift) % totalNumPlayers;
                 if (iPlayer < 0) {
-                	iPlayer += totalNumPlayers;
+                    iPlayer += totalNumPlayers;
                 }
                 iAlive = ingamePlayers.indexOf(allPlayers.get(iPlayer));
             } while (iAlive < 0);
             iPlayer = iAlive;
         } else { // for the case playerTurn hasn't died
-        	final int numPlayersInGame = ingamePlayers.size();
-        	iPlayer = (iPlayer + shift) % numPlayersInGame;
-        	if (iPlayer < 0) {
-        		iPlayer += numPlayersInGame;
-        	}
+            final int numPlayersInGame = ingamePlayers.size();
+            iPlayer = (iPlayer + shift) % numPlayersInGame;
+            if (iPlayer < 0) {
+                iPlayer += numPlayersInGame;
+            }
         }
 
         return ingamePlayers.get(iPlayer);

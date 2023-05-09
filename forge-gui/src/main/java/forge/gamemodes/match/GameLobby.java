@@ -426,12 +426,14 @@ public abstract class GameLobby implements IHasGameType {
             final int team = GameType.Archenemy.equals(currentGameType) && !isArchenemy ? 1 : slot.getTeam();
             final Set<AIOption> aiOptions = slot.getAiOptions();
 
-            final boolean isAI = slot.getType() == LobbySlotType.AI;
+            final boolean isAI = (slot.getType() == LobbySlotType.AI);
+            final boolean isGoldFisher = slot.getType() == LobbySlotType.GOLDFISHER;
             final LobbyPlayer lobbyPlayer;
             if (isAI) {
                 lobbyPlayer = GamePlayerUtil.createAiPlayer(name, avatar, sleeve, aiOptions);
-            }
-            else {
+            } else if (isGoldFisher) {
+                lobbyPlayer = GamePlayerUtil.createGoldfisherPlayer(name, avatar, sleeve, aiOptions);
+            } else {
                 boolean setNameNow = false;
                 if (!hasNameBeenSet && slot.getType() == LobbySlotType.LOCAL) {
                     setNameNow = true;
@@ -541,6 +543,7 @@ public abstract class GameLobby implements IHasGameType {
                 hostedMatch.startMatch(GameType.Constructed, variantTypes, players, guis);
 
                 for (final Player p : hostedMatch.getGame().getPlayers()) {
+                    System.out.println(p + " " + p.isAI());
                     final LobbySlot slot = playerToSlot.get(p.getRegisteredPlayer());
                     if (p.getController() instanceof IGameController) {
                         gameControllers.put(slot, (IGameController) p.getController());

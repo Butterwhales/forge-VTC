@@ -66,6 +66,7 @@
         <module>forge-gui-ios</module>
         <module>forge-gui-desktop</module>
         <module>forge-lda</module>
+        <module>goldfisher</module>
     </modules>
 
     <distributionManagement>
