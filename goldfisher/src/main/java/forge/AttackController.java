@@ -152,7 +152,7 @@ public class AttackController {
         for (Card creature : creatures) {
             final FCollectionView<GameEntity> defs = combat.getDefenders();
             GameEntity defender = defs.getFirst();
-            if (creature.getCurrentToughness() > maxOppPow && creature.getCurrentPower() >= maxOppPow){
+            if (creature.getCurrentToughness() > maxOppPow && creature.getCurrentPower() >= maxOppDef){
                 combat.addAttacker(creature, defender);
             }
         }

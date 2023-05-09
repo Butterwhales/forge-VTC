@@ -1810,37 +1810,42 @@ public class GoldfisherController {
     public GameEntity chooseSpellTargets(SpellAbility sa, Player goldfish) {
         Card source = sa.getHostCard();
 
+        Player opponent = goldfish.getOpponents().getFirst();
 
-        //sa.set
-//        System.out.println(sa);
-        // System.out.println(sa.findSubAbilityByType());
-        //current theory. The way that skull cracks ability(s) resolve starts with "players can't gain life this turn.","Damage can't be prevented this turn",
-        // and then "Skullcrack deals 3 damage to target player or planeswalker."
-        // I think I need to figure out how to make the initial ability have a target of "each player"
-        int predictedDamage = 0;
-        int spellDamage = 0;
-        try {
-            spellDamage = Integer.parseInt(sa.getParam("NumDmg"));
-        } catch (NumberFormatException ignored) {
-            spellDamage = 3;
-        }
+        int predictedCreatureDamage = 0;
+        int predictedPlayerDamage = 0;
 
-        predictedDamage += spellDamage;
         if (predictedSpells != null) {
+            Debugger.log("Predicted Spells: " + predictedSpells);
             for (Card futureSpell : predictedSpells) {
-                for (SpellAbility futureSa : futureSpell.getAllSpellAbilities()) {
-                    try {
-                        predictedDamage += Integer.parseInt(futureSa.getParam("NumDmg"));
-                    } catch (NumberFormatException ignored) {
-
+                if (futureSpell.isCreature())
+                    continue;
+                if (futureSpell.isSpell())
+                    for (SpellAbility futureSa : futureSpell.getSpellAbilities()) {
+                        int damage = 0;
+                        try {
+                            damage = Integer.parseInt(futureSa.getParam("NumDmg"));
+                        } catch (NumberFormatException ignored) {
+                            damage = 3;
+                        }
+                        Debugger.log("Predicted Spell: " + futureSa + " Damage: " + damage);
+                        if (futureSa.canTarget(opponent)) {
+                            predictedPlayerDamage += damage;
+                        }
+                        for (Card creature : opponent.getCreaturesInPlay()) {
+                            if (futureSa.canTarget(creature)) {
+                                predictedCreatureDamage += damage;
+                                break;
+                            }
+                        }
+                        if (damage > 0)
+                            break;
                     }
-                }
             }
         }
 
-        Player opponent = goldfish.getOpponents().getFirst();
 
-        if (!opponent.getCreaturesInPlay().isEmpty() && predictedDamage < opponent.getLife()) {
+        if (!opponent.getCreaturesInPlay().isEmpty() && predictedPlayerDamage < opponent.getLife()) {
             CardCollection creatureTargets = opponent.getCreaturesInPlay();
             Collections.sort(creatureTargets, (o1, o2) -> {
                 if (o1.getNetToughness() < o2.getNetToughness())
@@ -1848,28 +1853,26 @@ public class GoldfisherController {
                 return 0;
             });
             Debugger.log("Targets in order largest to smallest: " + creatureTargets);
-            Debugger.log("Predicted Damage " + predictedDamage);
+            Debugger.log("Predicted Creature Damage: " + predictedCreatureDamage + " Predicted Player Damage: " + predictedPlayerDamage);
 
             boolean ensnare = false;
 
 
             for (Card card : player.getCardsIn(ZoneType.Battlefield)) {
                 if (card.isArtifact()) {
-                    if (Objects.equals(card.getName(), "Ensnaring Bridge")){
+                    if (Objects.equals(card.getName(), "Ensnaring Bridge")) {
                         ensnare = true;
                         break;
                     }
                 }
             }
 
-            if (ensnare){
-                for (Card card : player.getCardsIn(ZoneType.Battlefield)) {
-                    if (card.isCreature()){
-                        if (Objects.equals(card.getName(), "Eidolon of the Great Revel")){
-                            if (sa.canTarget(card)) {
-                                Debugger.log("Targeted: " + card.getName());
-                                return card;
-                            }
+            if (ensnare) {
+                for (Card card : player.getCreaturesInPlay()) {
+                    if (Objects.equals(card.getName(), "Eidolon of the Great Revel")) {
+                        if (sa.canTarget(card)) {
+                            Debugger.log("Targeted: " + card.getName());
+                            return card;
                         }
                     }
                 }
@@ -1881,32 +1884,32 @@ public class GoldfisherController {
             }
 
             for (Card creatureTarget : creatureTargets) {
-                Debugger.log("Can it target creature: " + sa.canTarget(creatureTarget));
+                Debugger.log("Can it target " + creatureTarget + "? " + sa.canTarget(creatureTarget));
                 if (sa.canTarget(creatureTarget) && !creatureTarget.hasKeyword(Keyword.INDESTRUCTIBLE)
                         && !creatureTarget.hasKeyword(Keyword.WARD)
-                        && !creatureTarget.hasKeyword(Keyword.PROTECTION)
-                        && creatureTarget.getAssignedDamage() <= creatureTarget.getNetToughness()
+//                        && !creatureTarget.hasKeyword(Keyword.PROTECTION)
                 ) {
-                    if (spellDamage < creatureTarget.getNetToughness()) {
-                        int stackDamage = 0;
-                        for (Card cardOnStack : goldfish.getCardsIn(ZoneType.Stack)) {
-                            for (SpellAbility stackSa : cardOnStack.getAllSpellAbilities()) {
+
+                    int stackDamage = 0;
+                    for (Card cardOnStack : goldfish.getCardsIn(ZoneType.Stack)) {
+                        for (SpellAbility stackSa : cardOnStack.getAllSpellAbilities()) {
+                            if (stackSa.isTargeting(creatureTarget))
                                 try {
                                     stackDamage += Integer.parseInt(stackSa.getParam("NumDmg"));
                                 } catch (NumberFormatException ignored) {
 
                                 }
-                            }
-                        }
-                        Debugger.log("Stack Damage: " + stackDamage);
-                        if (predictedDamage < creatureTarget.getNetToughness() || stackDamage < creatureTarget.getNetToughness()) {
-                            continue;
                         }
                     }
-
+                    Debugger.log("Stack Damage: " + stackDamage + " Predicted Creature Damage: " + predictedCreatureDamage);
+                    if (predictedCreatureDamage + stackDamage < creatureTarget.getNetToughness()) {
+                        continue;
+                    }
+                    if (stackDamage >= creatureTarget.getNetToughness()) {
+                        continue;
+                    }
 
                     Debugger.log("Spell damage: " + sa.getParam("NumDmg"));
-                    Debugger.log("Assigned Damage: " + creatureTarget.getAssignedDamage());
                     Debugger.log("Targeted: " + creatureTarget.getName() + " [" + creatureTarget.getNetPower() + "/" + creatureTarget.getNetToughness() + "]");
                     return creatureTarget;
                 }
@@ -1937,7 +1940,7 @@ public class GoldfisherController {
     }
 
     public boolean tapLands(ManaCost cost, SpellAbility sa, boolean test) {
-        System.out.println("Mana Cost: " + cost.getCMC());
+        Debugger.log("Mana Cost: " + cost.getCMC());
         CardCollection untappedLands;
         untappedLands = getUntappedLands();
         Iterator<Card> iter = untappedLands.iterator();
@@ -2102,9 +2105,9 @@ public class GoldfisherController {
 
         boolean ensnare = false;
 
-        for (Card card: player.getCardsIn(ZoneType.Battlefield)) {
+        for (Card card : player.getCardsIn(ZoneType.Battlefield)) {
             if (card.isArtifact()) {
-                if (Objects.equals(card.getName(), "Ensnaring Bridge")){
+                if (Objects.equals(card.getName(), "Ensnaring Bridge")) {
                     ensnare = true;
                 }
             }
@@ -2156,7 +2159,7 @@ public class GoldfisherController {
         }
 
         abilities.addAll(cardToPlay.getAllPossibleAbilities(player, true));
-        System.out.println("Abilities of spell: " + abilities);
+        Debugger.log("Abilities of spell: " + abilities);
         for (SpellAbility sa : abilities) {
             sa.setActivatingPlayer(player);
 //            System.out.println(sa.getDescription());

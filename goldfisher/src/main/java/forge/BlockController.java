@@ -252,13 +252,7 @@ public class BlockController {
 
     private void makeBlocks(Combat combat) {
         final CardCollection blockersList = new CardCollection();
-
-        for (final Card blocker : blockersLeft) {
-//            if (CombatUtil.mustBlockAnAttacker(blocker, combat, null) ||
-//                    StaticAbilityMustBlock.blocksEachCombatIfAble(blocker)) {
-                blockersList.add(blocker);
-//            }
-        }
+        blockersList.addAll(blockersLeft);
 
         Debugger.log("Blockers List: " + blockersList);
 
@@ -266,12 +260,19 @@ public class BlockController {
             for (final Card attacker : attackers) {
                 List<Card> blockers = getPossibleBlockers(combat, attacker, blockersList, false);
                 for (final Card blocker : blockers) {
-                    if (CombatUtil.canBlock(attacker, blocker, combat) ){
-//                            && blockersLeft.contains(blocker)
+                    if (CombatUtil.canBlock(attacker, blocker, combat)
+                            && blockersLeft.contains(blocker)){
 //                            && (CombatUtil.mustBlockAnAttacker(blocker, combat, null)
 //                            || StaticAbilityMustBlock.blocksEachCombatIfAble(blocker))) {
+                        Debugger.log(attacker + " is already blocked?" + combat.isBlocked(attacker));
+//                        combat.is
+//                        if (combat.isBlocked(attacker))
+//                            break;
                         System.out.println(blocker + " blocked " + attacker);
                         combat.addBlocker(attacker, blocker);
+
+                        //TODO Fix can't double block anything
+                        break;
                     }
                 }
             }
@@ -325,8 +326,7 @@ public class BlockController {
             result.add(blocker);
             newBlockerIsAdded = true;
         }
-        // Don't bother to keep damage up-to-date after the new blocker is
-        // added, as we can't modify the order of the other cards anyway
+
         for (final Card c : oldBlockers) {
             final int lethal = ComputerUtilCombat.getEnoughDamageToKill(c, damage, attacker, true);
             damage -= lethal;
