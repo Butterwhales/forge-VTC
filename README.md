@@ -229,16 +229,16 @@ Libgdx backend for desktop development for mobile backends.  Utilizes LWJGL.  Re
 
 #Deck to use with goldfisher
   Garenteed To work
-4 Chain Lightning
-4 Eidolon of the Great Revel
-4 Ensnaring Bridge
-4 Goblin Guide
-4 Lava Spike
-4 Lightning Bolt
-4 Lightning Strike
-4 Monastery Swiftspear
-18 Mountain
-4 Rift Bolt
-2 Searing Spear
-4 Skewer the Critics
+- 4 Chain Lightning
+- 4 Eidolon of the Great Revel
+- 4 Ensnaring Bridge
+- 4 Goblin Guide
+- 4 Lava Spike
+- 4 Lightning Bolt
+- 4 Lightning Strike
+- 4 Monastery Swiftspear
+- 18 Mountain
+- 4 Rift Bolt
+- 2 Searing Spear
+- 4 Skewer the Critics
 
