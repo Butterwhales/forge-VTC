@@ -226,3 +226,19 @@ Mobile GUI game logic utilizing [libgdx](https://libgdx.badlogicgames.com/) libr
 #### forge-gui-mobile-dev
 
 Libgdx backend for desktop development for mobile backends.  Utilizes LWJGL.  Relies on forge-gui-mobile for GUI logic.
+
+#Deck to use with goldfisher
+  Garenteed To work
+4 Chain Lightning
+4 Eidolon of the Great Revel
+4 Ensnaring Bridge
+4 Goblin Guide
+4 Lava Spike
+4 Lightning Bolt
+4 Lightning Strike
+4 Monastery Swiftspear
+18 Mountain
+4 Rift Bolt
+2 Searing Spear
+4 Skewer the Critics
+
